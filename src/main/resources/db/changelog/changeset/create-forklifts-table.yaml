@@ -1,0 +1,50 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-author #текстовый идентификатор (Обязателен)
+      author: Aleksanra Anisimova # автор (Обязателен)
+      changes:
+        - createTable: # создаем новую таблицу
+            tableName: forklifts
+            columns: # объявления колонок
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: manufacturer
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: model
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: capacity
+                  type: bigint
+                  constraints:
+                    nullable: true
+              - column:
+                  name: year
+                  type: bigint
+                  constraints:
+                    nullable: true
+              - column:
+                  name: hours
+                  type: bigint
+                  constraints:
+                    nullable: true
+              - column:
+                  name: location
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
