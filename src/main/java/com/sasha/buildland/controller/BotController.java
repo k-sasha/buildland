@@ -1,6 +1,9 @@
 package com.sasha.buildland.controller;
 
 import com.sasha.buildland.config.BotConfig;
+import com.sasha.buildland.entity.Forklift;
+import com.sasha.buildland.service.ForkliftService;
+import com.sasha.buildland.service.ForkliftServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -8,11 +11,20 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
 public class BotController extends TelegramLongPollingBot {
 
     @Autowired
     final BotConfig config;
+
+    @Autowired
+    private ForkliftService forkliftService;
+
+    private Map<Long, Forklift> usersForkliftMap = new HashMap<>();
+    private Map<Long, String> usersCurrentActionMap = new HashMap<>();
 
     public BotController(BotConfig config) {
         this.config = config;
@@ -34,15 +46,29 @@ public class BotController extends TelegramLongPollingBot {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
 
-            switch (messageText) {
-                case "/start":
-                    // get a welcome message
-                    startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
-                    break;
-                default:
-                    prepareAndSendMessage(chatId, "Sorry command was not recognized");
+            // Check if it's a command (typically starts with '/')
+            if (messageText.startsWith("/")) {
+                handleCommand(chatId, messageText, update);
+            } else {
+                handleUserResponse(chatId, messageText);
             }
 
+
+
+        }
+    }
+
+    private void handleCommand(long chatId, String command, Update update) {
+        switch (command) {
+            case "/start":
+                // get a welcome message
+                startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
+                break;
+            case "/addForklift":
+                addForkliftCommandReceived(chatId);
+                break;
+            default:
+                prepareAndSendMessage(chatId, "Sorry, the command was not recognized");
         }
     }
 
@@ -64,6 +90,77 @@ public class BotController extends TelegramLongPollingBot {
             execute(message);
         } catch (TelegramApiException e) {
 
+        }
+    }
+
+    private void addForkliftCommandReceived(long chatId) {
+        usersForkliftMap.put(chatId, new Forklift());
+        usersCurrentActionMap.put(chatId, "set_manufacturer");
+        prepareAndSendMessage(chatId, "Please set the manufacturer:");
+    }
+
+    private void handleUserResponse(long chatId, String response) {
+        Forklift forklift = usersForkliftMap.get(chatId);
+        if (forklift == null) {
+            prepareAndSendMessage(chatId, "Sorry, the command was not recognized");
+            return;
+        }
+
+        switch (usersCurrentActionMap.get(chatId)) {
+            case "set_manufacturer":
+                forklift.setManufacturer(response);
+                usersCurrentActionMap.put(chatId, "set_model");
+                prepareAndSendMessage(chatId, "Please set the model:");
+                break;
+            case "set_model":
+                forklift.setModel(response);
+                usersCurrentActionMap.put(chatId, "set_capacity");
+                prepareAndSendMessage(chatId, "Please set the capacity:");
+                break;
+            case "set_capacity":
+                try {
+                    int capacity = Integer.parseInt(response);
+                    forklift.setCapacity(capacity);
+                    usersCurrentActionMap.put(chatId, "set_year");
+                    prepareAndSendMessage(chatId, "Please set the year:");
+                } catch (NumberFormatException e) {
+                    prepareAndSendMessage(chatId, "Invalid capacity. Please enter a valid number.");
+                }
+                break;
+            case "set_year":
+                try {
+                    int year = Integer.parseInt(response);
+                    forklift.setYear(year);
+                    usersCurrentActionMap.put(chatId, "set_hours");
+                    prepareAndSendMessage(chatId, "Please set the hours:");
+                } catch (NumberFormatException e) {
+                    prepareAndSendMessage(chatId, "Invalid year. Please enter a valid number.");
+                }
+                break;
+            case "set_hours":
+                try {
+                    Long hours = Long.parseLong(response);
+                    forklift.setHours(hours);
+                    usersCurrentActionMap.put(chatId, "set_location");
+                    prepareAndSendMessage(chatId, "Please set the location:");
+                } catch (NumberFormatException e) {
+                    prepareAndSendMessage(chatId, "Invalid hours. Please enter a valid number.");
+                }
+                break;
+            case "set_location":
+                forklift.setLocation(response);
+                usersCurrentActionMap.put(chatId, "set_status");
+                prepareAndSendMessage(chatId, "Please set the status:");
+                break;
+            case "set_status":
+                forklift.setStatus(response);
+                forkliftService.saveForklift(forklift);
+                usersForkliftMap.remove(chatId);
+                usersCurrentActionMap.remove(chatId);
+                prepareAndSendMessage(chatId, "Forklift has been added successfully!");
+                break;
+            default:
+                prepareAndSendMessage(chatId, "Sorry, I didn't understand that.");
         }
     }
 

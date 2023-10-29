@@ -1,6 +1,7 @@
 package com.sasha.buildland.config;
 
 import com.sasha.buildland.controller.BotController;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
@@ -11,6 +12,7 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 
 @Component
+@AllArgsConstructor
 public class BotInitializer {
     @Autowired
     BotController bot;
