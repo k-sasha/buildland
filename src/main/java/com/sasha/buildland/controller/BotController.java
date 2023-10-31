@@ -9,9 +9,13 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -42,7 +46,7 @@ public class BotController extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText()) {
+        if (update.hasMessage() && update.getMessage().hasText()) { //if we got text
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
 
@@ -52,9 +56,6 @@ public class BotController extends TelegramLongPollingBot {
             } else {
                 handleUserResponse(chatId, messageText);
             }
-
-
-
         }
     }
 
@@ -73,10 +74,49 @@ public class BotController extends TelegramLongPollingBot {
     }
 
     private void startCommandReceived(long chatId, String name) {
-        // просто приветствие
+        // welcome message
         String answer = "Hi, "+ name+" nice to meet you";
         prepareAndSendMessage(chatId, answer);
+
+        // invoke method with keyboard
+        sendMessageWithKeyboard(chatId, answer, createKeyboard());
     }
+
+    private void sendMessageWithKeyboard(long chatId, String textToSend, ReplyKeyboardMarkup keyboardMarkup) {
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText(textToSend);
+
+        message.setReplyMarkup(keyboardMarkup); //attach the keyboard to our message
+
+        executeMessage(message); // execute the message sending
+
+    }
+
+    private ReplyKeyboardMarkup createKeyboard() {
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+
+        //create a list of rows
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        // first row of buttons
+        KeyboardRow row = new KeyboardRow();
+        row.add("add");
+        row.add("delete");
+        keyboardRows.add(row); // add the row to the list
+
+        // second row of buttons
+        row = new KeyboardRow();
+        row.add("update forklift");
+        row.add("get forklift");
+        keyboardRows.add(row); // add the row to the list
+
+        // add to the keyboard
+        keyboardMarkup.setKeyboard(keyboardRows);
+
+        return keyboardMarkup;
+    }
+
 
     private void prepareAndSendMessage(long chatId, String textToSend) {
         SendMessage message = new SendMessage();
