@@ -6,6 +6,7 @@ import com.sasha.buildland.service.ForkliftService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -29,12 +30,29 @@ public class BotController extends TelegramLongPollingBot {
     private Map<Long, Forklift> usersForkliftMap = new HashMap<>();
     private Map<Long, String> usersCurrentActionMap = new HashMap<>();
 
+    private Map<String, String> buttonToLocationMap = new HashMap<>();
+    private Map<String, String> buttonToManufacturerMap = new HashMap<>();
+    private Map<String, String> buttonToStatusMap = new HashMap<>();
+
     private List<String> manufacturers = Arrays.asList("Toyota", "Nissan", "Caterpillar");
     private List<String> locations = Arrays.asList("El Monte", "Commerce");
-    private List<String> statuses = Arrays.asList("Ready for sale", "repairs needed", "sent for repair", "rented", "sold");
+    private List<String> statuses = Arrays.asList("ready for sale", "repairs needed", "sent for repair", "rented", "sold");
 
     public BotController(BotConfig config) {
         this.config = config;
+
+        buttonToManufacturerMap.put("TOYOTA_BUTTON", "Toyota");
+        buttonToManufacturerMap.put("NISSAN_BUTTON", "Nissan");
+        buttonToManufacturerMap.put("CATERPILLAR_BUTTON", "Caterpillar");
+
+        buttonToLocationMap.put("EL MONTE_BUTTON","El Monte");
+        buttonToLocationMap.put("COMMERCE_BUTTON","Commerce");
+
+        buttonToStatusMap.put("READY FOR SALE_BUTTON", "Ready for sale");
+        buttonToStatusMap.put("REPAIRS NEEDED_BUTTON", "repairs needed");
+        buttonToStatusMap.put("SEND FOR REPAIR_BUTTON", "sent for repair");
+        buttonToStatusMap.put("RENTED_BUTTON", "rented");
+        buttonToStatusMap.put("SOLD_BUTTON", "sold");
     }
 
     @Override
@@ -70,51 +88,7 @@ public class BotController extends TelegramLongPollingBot {
             long messageId = update.getCallbackQuery().getMessage().getMessageId();
             long chatId = update.getCallbackQuery().getMessage().getChatId();
 
-            Forklift forklift = usersForkliftMap.get(chatId);
-            if (forklift == null) {
-                prepareAndSendMessage(chatId, "Sorry, the command was not recognized");
-                return;
-            }
-
-            switch (usersCurrentActionMap.get(chatId)) {
-                case "set_manufacturer":
-                    // check which button we got
-                    if (callBackData.equals("TOYOTA_BUTTON")) {
-                        forklift.setManufacturer("Toyota");
-                    } else if (callBackData.equals("NISSAN_BUTTON")) {
-                        forklift.setManufacturer("Nissan");
-                    } else if (callBackData.equals("CATERPILLAR_BUTTON")) {
-                        forklift.setManufacturer("Caterpillar");
-                    }
-                    usersCurrentActionMap.put(chatId, "set_model");
-                    editAndSendMessage(chatId, "Please set the model:", messageId);
-                    break;
-                case "set_location":
-                    if (callBackData.equals("EL MONTE_BUTTON")) {
-                        forklift.setLocation("El Monte");
-                    } else if (callBackData.equals("COMMERCE_BUTTON")) {
-                        forklift.setLocation("Commerce");
-                    }
-                    usersCurrentActionMap.put(chatId, "set_status");
-                    String text = "Please set the status:";
-                    sendMessageWithInlineKeyboard(statuses, text, chatId, messageId);
-                    break;
-                case "set_status":
-                    if(callBackData.equals("READY FOR SALE_BUTTON")){
-                        forklift.setStatus("Ready for sale");
-                    } else if(callBackData.equals("REPAIRS NEEDED_BUTTON")){
-                        forklift.setStatus("repairs needed");
-                    }
-                    forkliftService.saveForklift(forklift);
-                    usersForkliftMap.remove(chatId);
-                    usersCurrentActionMap.remove(chatId);
-                    editAndSendMessage(chatId, "The details about the new forklift must be here.", messageId);
-                    sendMessageWithKeyboard(chatId, "Forklift has been added successfully!", createStartKeyboard());
-                    break;
-                default:
-                    prepareAndSendMessage(chatId, "Sorry, I didn't understand that.");
-            }
-
+            handleUserResponseWithInlineKeyboard(chatId,callBackData,messageId);
 
         }
     }
@@ -219,16 +193,15 @@ public class BotController extends TelegramLongPollingBot {
         return keyboardMarkup;
     }
 
-
     private void prepareAndSendMessage(long chatId, String textToSend) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(textToSend);
+
         executeMessage(message);
     }
 
     private void editAndSendMessage(long chatId, String text, long messageId) {
-
         EditMessageText message = new EditMessageText();
         message.setChatId(String.valueOf(chatId));
         message.setText(text);
@@ -237,19 +210,28 @@ public class BotController extends TelegramLongPollingBot {
         executeMessage(message);
     }
 
-    private void executeMessage(SendMessage message) {
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-
+    private BotApiMethod<?> prepareMessage(long chatId, String text, Long messageId, boolean isEdit) {
+        BotApiMethod<?> message;
+        if (isEdit) {
+            EditMessageText editMessage = new EditMessageText();
+            editMessage.setChatId(String.valueOf(chatId));
+            editMessage.setText(text);
+            editMessage.setMessageId(messageId.intValue());
+            message = editMessage;
+        } else {
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(String.valueOf(chatId));
+            sendMessage.setText(text);
+            message = sendMessage;
         }
+        return message;
     }
 
-    private void executeMessage(EditMessageText message) {
+    private void executeMessage(BotApiMethod<?> message) { // BotApiMethod<?> includes SendMessage and EditMessageText classes
         try {
             execute(message);
         } catch (TelegramApiException e) {
-
+            //TODO write exception
         }
     }
 
@@ -258,7 +240,6 @@ public class BotController extends TelegramLongPollingBot {
         usersForkliftMap.put(chatId, new Forklift());
         usersCurrentActionMap.put(chatId, "set_manufacturer");
         String text = "Please set the manufacturer:";
-//        prepareAndSendMessage(chatId, text);
         sendMessageWithKeyboard(chatId, "New forklift", createReturnKeyboard());
         sendMessageWithInlineKeyboard(manufacturers, text, chatId);
     }
@@ -301,10 +282,7 @@ public class BotController extends TelegramLongPollingBot {
     }
 
     private void sendMessageWithInlineKeyboard(List<String> list, String text, long chatId, long messageId) {
-        EditMessageText message = new EditMessageText();
-        message.setChatId(String.valueOf(chatId));
-        message.setText(text);
-        message.setMessageId((int) messageId);
+        BotApiMethod<?> message = prepareMessage(chatId, text, messageId, true);
 
         //  create keyboard with buttons from List
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
@@ -333,7 +311,15 @@ public class BotController extends TelegramLongPollingBot {
         }
 
         markupInline.setKeyboard(rowsInline); //add to the keyboard
-        message.setReplyMarkup(markupInline); // add to the message
+
+        // check return type from prepareMessage() method
+        if (message instanceof EditMessageText) {
+            EditMessageText editMessage = (EditMessageText) message;
+            editMessage.setReplyMarkup(markupInline);  // add to the message
+        } else if (message instanceof SendMessage) {
+            SendMessage sendMessage = (SendMessage) message;
+            sendMessage.setReplyMarkup(markupInline); // add to the message
+        }
 
         executeMessage(message);  // send message
     }
@@ -387,6 +373,54 @@ public class BotController extends TelegramLongPollingBot {
                 prepareAndSendMessage(chatId, "Sorry, I didn't understand that. Please click on the button");
         }
     }
+
+    private void handleUserResponseWithInlineKeyboard(long chatId, String callBackData, long messageId ) {
+        Forklift forklift = usersForkliftMap.get(chatId);
+        if (forklift == null) {
+            prepareAndSendMessage(chatId, "Sorry, the command was not recognized");
+            return;
+        }
+
+        switch (usersCurrentActionMap.get(chatId)) {
+            case "set_manufacturer":
+                String manufacturer = buttonToManufacturerMap.get(callBackData);
+                if (manufacturer != null) {
+                    forklift.setManufacturer(manufacturer);
+                    usersCurrentActionMap.put(chatId, "set_model");
+                    editAndSendMessage(chatId, "Please set the model:", messageId);
+                } else {
+                    prepareAndSendMessage(chatId, "Sorry, the manufacturer was not recognized");
+                }
+                break;
+            case "set_location":
+                String location = buttonToLocationMap.get(callBackData);
+                if (location != null) {
+                    forklift.setLocation(location);
+                    usersCurrentActionMap.put(chatId, "set_status");
+                    sendMessageWithInlineKeyboard(statuses, "Please set the status:", chatId, messageId);
+                } else {
+                    prepareAndSendMessage(chatId, "Sorry, the location was not recognized");
+                }
+                break;
+            case "set_status":
+                String status = buttonToStatusMap.get(callBackData);
+                if (status != null) {
+                    forklift.setStatus(status);
+                    forkliftService.saveForklift(forklift);
+                    usersForkliftMap.remove(chatId);
+                    usersCurrentActionMap.remove(chatId);
+                    editAndSendMessage(chatId, "The details about the new forklift must be here.", messageId);
+                    sendMessageWithKeyboard(chatId, "Forklift has been added successfully!", createStartKeyboard());
+                } else {
+                    prepareAndSendMessage(chatId, "Sorry, the status was not recognized");
+                }
+                break;
+            default:
+                prepareAndSendMessage(chatId, "Sorry, I didn't understand that.");
+                break;
+        }
+    }
+
 
 }
 
