@@ -19,3 +19,6 @@ spring:
     init:
       mode: never
       platform: postgres
+bot:
+  name: BuildlandLiquidationBot
+  token: 6744561174:AAEdE5dPppQc6zrSkpJAQtF-eDOw4QL0fdo
