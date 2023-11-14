@@ -6,20 +6,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration
-//@PropertySource("classpath:application.properties")
+@PropertySource("classpath:application.yml")
 @Data //generation getters/setters/toString/NoArgsConstructor
 public class BotConfig {
 
-//    @Value("${bot.name}")
-    @Value("$BuildlandLiquidationBot")
+    @Value("${bot.name}")
     String botName;
 
-//    @Value("${bot.token}")
-    @Value("6744561174:AAEdE5dPppQc6zrSkpJAQtF-eDOw4QL0fdo")
+    @Value("${bot.token}")
     String token;
-
-//    @Value("${bot.ownerId}")
-//    Long ownerId;
-
 
 }

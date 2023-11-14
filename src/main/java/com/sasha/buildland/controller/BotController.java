@@ -38,6 +38,9 @@ public class BotController extends TelegramLongPollingBot {
     private List<String> locations = Arrays.asList("El Monte", "Commerce");
     private List<String> statuses = Arrays.asList("ready for sale", "repairs needed", "sent for repair", "rented", "sold");
 
+    private final String COMMAND_NOT_RECOGNIZED_MESSAGE = "Sorry, the command was not recognized";
+    private final String BUTTON_SUFFIX = "_BUTTON";
+
     public BotController(BotConfig config) {
         this.config = config;
 
@@ -103,14 +106,13 @@ public class BotController extends TelegramLongPollingBot {
                 addForkliftCommandReceived(chatId);
                 break;
             default:
-                prepareAndSendMessage(chatId, "Sorry, the command was not recognized");
+                prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
         }
     }
 
     private void startCommandReceived(long chatId, String name) {
         // welcome message
         String answer = "Hi, " + name + " nice to meet you";
-//        prepareAndSendMessage(chatId, answer);
 
         // invoke method with keyboard
         sendMessageWithKeyboard(chatId, answer, createStartKeyboard());
@@ -254,22 +256,20 @@ public class BotController extends TelegramLongPollingBot {
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>(); // create rows
 
         // For each list's element
-        for (int i = 0; i < list.size(); i++) {
+        for (int i = 0; i < list.size(); i+=2) {
             List<InlineKeyboardButton> rowInline = new ArrayList<>();  // create one row
 
             var firstButton = new InlineKeyboardButton();  // create first button
             firstButton.setText(list.get(i));
-            firstButton.setCallbackData(list.get(i).toUpperCase() + "_BUTTON"); // indicator (id), that allow bot to understand which button is pressed
+            firstButton.setCallbackData(list.get(i).toUpperCase() + BUTTON_SUFFIX); // indicator (id), that allow bot to understand which button is pressed
             rowInline.add(firstButton);
 
             // Check if there is the next element to add into the same row
             if (i + 1 < list.size()) {
                 var secondButton = new InlineKeyboardButton();
                 secondButton.setText(list.get(i + 1));
-                secondButton.setCallbackData(list.get(i + 1).toUpperCase() + "_BUTTON");
+                secondButton.setCallbackData(list.get(i + 1).toUpperCase() + BUTTON_SUFFIX);
                 rowInline.add(secondButton);
-
-                i++;  // skip next element because we have already added it
             }
 
             rowsInline.add(rowInline); // add row to rows
@@ -289,22 +289,20 @@ public class BotController extends TelegramLongPollingBot {
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>(); // create rows
 
         // For each list's element
-        for (int i = 0; i < list.size(); i++) {
+        for (int i = 0; i < list.size(); i+=2) {
             List<InlineKeyboardButton> rowInline = new ArrayList<>();  // create one row
 
             var firstButton = new InlineKeyboardButton();  // create first button
             firstButton.setText(list.get(i));
-            firstButton.setCallbackData(list.get(i).toUpperCase() + "_BUTTON"); // indicator (id), that allow bot to understand which button is pressed
+            firstButton.setCallbackData(list.get(i).toUpperCase() + BUTTON_SUFFIX); // indicator (id), that allow bot to understand which button is pressed
             rowInline.add(firstButton);
 
             // Check if there is the next element to add into the same row
             if (i + 1 < list.size()) {
                 var secondButton = new InlineKeyboardButton();
                 secondButton.setText(list.get(i + 1));
-                secondButton.setCallbackData(list.get(i + 1).toUpperCase() + "_BUTTON");
+                secondButton.setCallbackData(list.get(i + 1).toUpperCase() + BUTTON_SUFFIX);
                 rowInline.add(secondButton);
-
-                i++;  // skip next element because we have already added it
             }
 
             rowsInline.add(rowInline); // add row to rows
@@ -328,7 +326,7 @@ public class BotController extends TelegramLongPollingBot {
     private void handleUserResponse(long chatId, String response) {
         Forklift forklift = usersForkliftMap.get(chatId);
         if (forklift == null) {
-            prepareAndSendMessage(chatId, "Sorry, the command was not recognized");
+            prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
             return;
         }
 
@@ -377,7 +375,7 @@ public class BotController extends TelegramLongPollingBot {
     private void handleUserResponseWithInlineKeyboard(long chatId, String callBackData, long messageId ) {
         Forklift forklift = usersForkliftMap.get(chatId);
         if (forklift == null) {
-            prepareAndSendMessage(chatId, "Sorry, the command was not recognized");
+            prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
             return;
         }
 
@@ -416,7 +414,7 @@ public class BotController extends TelegramLongPollingBot {
                 }
                 break;
             default:
-                prepareAndSendMessage(chatId, "Sorry, I didn't understand that.");
+                prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
                 break;
         }
     }
