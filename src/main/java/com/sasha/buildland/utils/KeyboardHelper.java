@@ -12,7 +12,7 @@ import java.util.List;
 @Component
 public class KeyboardHelper {
 
-    private final String BUTTON_SUFFIX = "_BUTTON";
+    private final static String BUTTON_SUFFIX = "_BUTTON";
 
     public ReplyKeyboardMarkup createStartKeyboard() {
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();

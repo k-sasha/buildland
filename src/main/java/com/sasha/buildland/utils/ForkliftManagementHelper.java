@@ -2,6 +2,7 @@ package com.sasha.buildland.utils;
 
 import com.sasha.buildland.entity.Forklift;
 import com.sasha.buildland.service.ForkliftService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@Slf4j
 public class ForkliftManagementHelper {
 
     private final ForkliftService forkliftService;
@@ -29,7 +31,7 @@ public class ForkliftManagementHelper {
     private List<String> locations = Arrays.asList("El Monte", "Commerce");
     private List<String> statuses = Arrays.asList("ready for sale", "repairs needed", "sent for repair", "rented", "sold");
 
-    private final String COMMAND_NOT_RECOGNIZED_MESSAGE = "Sorry, the command was not recognized";
+    private final static String COMMAND_NOT_RECOGNIZED_MESSAGE = "Sorry, the command was not recognized";
 
     @Autowired
     public ForkliftManagementHelper(ForkliftService forkliftService,
@@ -62,12 +64,14 @@ public class ForkliftManagementHelper {
         String text = "Please set the manufacturer:";
         messageHelper.sendMessageWithKeyboard(chatId, "New forklift", keyboardHelper.createReturnKeyboard());
         messageHelper.sendMessageWithInlineKeyboard(manufacturers, text, chatId);
+        log.info("Initiated forklift addition process for chatId: {}", chatId);
     }
 
     public void handleUserResponse(long chatId, String response) {
         Forklift forklift = usersForkliftMap.get(chatId);
         if (forklift == null) {
             messageHelper.prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
+            log.warn("Forklift not found for chatId: {}", chatId);
             return;
         }
 
@@ -76,6 +80,7 @@ public class ForkliftManagementHelper {
                 forklift.setModel(response);
                 usersCurrentActionMap.put(chatId, "set_capacity");
                 messageHelper.prepareAndSendMessage(chatId, "Please set the capacity:");
+                log.info("User response for chatId {}: set model to {}", chatId, response);
                 break;
             case "set_capacity":
                 try {
@@ -83,8 +88,10 @@ public class ForkliftManagementHelper {
                     forklift.setCapacity(capacity);
                     usersCurrentActionMap.put(chatId, "set_year");
                     messageHelper.prepareAndSendMessage(chatId, "Please set the year:");
+                    log.info("User response for chatId {}: set capacity to {}", chatId, response);
                 } catch (NumberFormatException e) {
                     messageHelper.prepareAndSendMessage(chatId, "Invalid capacity. Please enter a valid number.");
+                    log.error("NumberFormatException for chatId {}: {}", chatId, e.getMessage());
                 }
                 break;
             case "set_year":
@@ -93,8 +100,10 @@ public class ForkliftManagementHelper {
                     forklift.setYear(year);
                     usersCurrentActionMap.put(chatId, "set_hours");
                     messageHelper.prepareAndSendMessage(chatId, "Please set the hours:");
+                    log.info("User response for chatId {}: set year to {}", chatId, response);
                 } catch (NumberFormatException e) {
                     messageHelper.prepareAndSendMessage(chatId, "Invalid year. Please enter a valid number.");
+                    log.error("NumberFormatException for chatId {}: {}", chatId, e.getMessage());
                 }
                 break;
             case "set_hours":
@@ -104,12 +113,15 @@ public class ForkliftManagementHelper {
                     usersCurrentActionMap.put(chatId, "set_location");
                     String text = "Please set the location:";
                     messageHelper.sendMessageWithInlineKeyboard(locations, text, chatId);
+                    log.info("User response for chatId {}: set hours to {}", chatId, response);
                 } catch (NumberFormatException e) {
                     messageHelper.prepareAndSendMessage(chatId, "Invalid hours. Please enter a valid number.");
+                    log.error("NumberFormatException for chatId {}: {}", chatId, e.getMessage());
                 }
                 break;
             default:
                 messageHelper.prepareAndSendMessage(chatId, "Sorry, I didn't understand that. Please click on the button");
+                log.warn("Unrecognized action for chatId: {}. User response: '{}'", chatId, response);
         }
     }
 
@@ -117,6 +129,7 @@ public class ForkliftManagementHelper {
         Forklift forklift = usersForkliftMap.get(chatId);
         if (forklift == null) {
             messageHelper.prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
+            log.warn("Forklift not found for chatId: {}", chatId);
             return;
         }
 
@@ -127,8 +140,10 @@ public class ForkliftManagementHelper {
                     forklift.setManufacturer(manufacturer);
                     usersCurrentActionMap.put(chatId, "set_model");
                     messageHelper.editAndSendMessage(chatId, "Please set the model:", messageId);
+                    log.info("Manufacturer set to '{}' for chatId: {}", manufacturer, chatId);
                 } else {
                     messageHelper.prepareAndSendMessage(chatId, "Sorry, the manufacturer was not recognized");
+                    log.warn("Unrecognized manufacturer from callback data '{}' for chatId: {}", callBackData, chatId);
                 }
                 break;
             case "set_location":
@@ -137,8 +152,10 @@ public class ForkliftManagementHelper {
                     forklift.setLocation(location);
                     usersCurrentActionMap.put(chatId, "set_status");
                     messageHelper.sendMessageWithInlineKeyboard(statuses, "Please set the status:", chatId, messageId);
+                    log.info("Location set to '{}' for chatId: {}", location, chatId);
                 } else {
                     messageHelper.prepareAndSendMessage(chatId, "Sorry, the location was not recognized");
+                    log.warn("Unrecognized manufacturer from callback data '{}' for chatId: {}", callBackData, chatId);
                 }
                 break;
             case "set_status":
@@ -150,12 +167,15 @@ public class ForkliftManagementHelper {
                     usersCurrentActionMap.remove(chatId);
                     messageHelper.editAndSendMessage(chatId, "The details about the new forklift must be here.", messageId);
                     messageHelper.sendMessageWithKeyboard(chatId, "Forklift has been added successfully!", keyboardHelper.createStartKeyboard());
+                    log.info("Forklift successfully saved for chatId: {}, forklift: {}", chatId, forklift);
                 } else {
                     messageHelper.prepareAndSendMessage(chatId, "Sorry, the status was not recognized");
+                    log.warn("Unrecognized manufacturer from callback data '{}' for chatId: {}", callBackData, chatId);
                 }
                 break;
             default:
                 messageHelper.prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
+                log.warn("Unrecognized action for chatId: {}.", chatId);
                 break;
         }
     }

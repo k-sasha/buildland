@@ -4,6 +4,7 @@ import com.sasha.buildland.config.BotConfig;
 import com.sasha.buildland.utils.ForkliftManagementHelper;
 import com.sasha.buildland.utils.KeyboardHelper;
 import com.sasha.buildland.utils.MessageHelper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -11,6 +12,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 
 @Component
+@Slf4j
 public class BotController extends TelegramLongPollingBot {
 
     @Autowired
@@ -26,7 +28,7 @@ public class BotController extends TelegramLongPollingBot {
     private MessageHelper messageHelper;
 
 
-    private final String COMMAND_NOT_RECOGNIZED_MESSAGE = "Sorry, the command was not recognized";
+    private final static String COMMAND_NOT_RECOGNIZED_MESSAGE = "Sorry, the command was not recognized";
 
     public BotController(BotConfig config) {
         this.config = config;
@@ -47,6 +49,7 @@ public class BotController extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText()) { //if we got TEXT
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
+            log.info("Text message received from chatId: {}. Message: {}", chatId, messageText);
 
             // Check if it's a command (typically starts with '/')
             if (messageText.startsWith("/")) {
@@ -64,6 +67,7 @@ public class BotController extends TelegramLongPollingBot {
             // get messageId to edit text avoid sending new. If we know id than we can edit text
             long messageId = update.getCallbackQuery().getMessage().getMessageId();
             long chatId = update.getCallbackQuery().getMessage().getChatId();
+            log.info("Callback query received from chatId: {}. Data: {}", chatId, callBackData);
 
             forkliftManagementHelper.handleUserResponseWithInlineKeyboard(chatId,callBackData,messageId);
 
@@ -81,12 +85,14 @@ public class BotController extends TelegramLongPollingBot {
                 break;
             default:
                 messageHelper.prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
+                log.warn("Unrecognized command '{}' from chatId: {}", command, chatId);
         }
     }
 
     private void startCommandReceived(long chatId, String name) {
         // welcome message
         String answer = "Hi, " + name + " nice to meet you";
+        log.info("Replied to user {}", name);
 
         // invoke method with keyboard
         messageHelper.sendMessageWithKeyboard(chatId, answer, keyboardHelper.createStartKeyboard());
