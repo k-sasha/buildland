@@ -31,7 +31,7 @@ public class ForkliftManagementHelper {
     private List<String> locations = Arrays.asList("El Monte", "Commerce");
     private List<String> statuses = Arrays.asList("ready for sale", "repairs needed", "sent for repair", "rented", "sold");
 
-    private final static String COMMAND_NOT_RECOGNIZED_MESSAGE = "Sorry, the command was not recognized";
+    private static final String COMMAND_NOT_RECOGNIZED_MESSAGE = "Sorry, the command was not recognized";
 
     @Autowired
     public ForkliftManagementHelper(ForkliftService forkliftService,

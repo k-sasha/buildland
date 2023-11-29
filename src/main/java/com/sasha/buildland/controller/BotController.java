@@ -28,7 +28,7 @@ public class BotController extends TelegramLongPollingBot {
     private MessageHelper messageHelper;
 
 
-    private final static String COMMAND_NOT_RECOGNIZED_MESSAGE = "Sorry, the command was not recognized";
+    private static final String COMMAND_NOT_RECOGNIZED_MESSAGE = "Sorry, the command was not recognized";
 
     public BotController(BotConfig config) {
         this.config = config;
