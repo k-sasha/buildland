@@ -1,6 +1,10 @@
-databaseChangeLog: #параметр в котором находятся миграции
-  - include: # список активных миграций
-      file: db/changelog/changeset/create-forklifts-table.yaml # путь к файлу миграции
+databaseChangeLog:
+  - include: # List of active migrations
+      file: db/changelog/changeset/create-forklifts-table.yaml
   - include:
       file: db/changelog/changeset/create-sequence-forklift_seq.yaml
+  - include: # List of active migrations
+      file: db/changelog/changeset/create-locations-table.yaml
+  - include:
+      file: db/changelog/changeset/create-sequence-location_seq.yaml
 
