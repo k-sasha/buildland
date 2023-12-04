@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-author #  Textual identifier (Required)
+      author: Aleksanra Anisimova #  Author (Required)
+      changes:
+        - createTable: # create new table
+            tableName: locations
+            columns: # column declarations
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: location
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
