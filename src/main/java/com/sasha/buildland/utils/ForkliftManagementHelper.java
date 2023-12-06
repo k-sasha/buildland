@@ -21,7 +21,7 @@ public class ForkliftManagementHelper {
     private final MessageHelper messageHelper;
 
     private Map<Long, Forklift> usersForkliftMap = new HashMap<>();
-    private Map<Long, String> usersCurrentActionMap = new HashMap<>();
+    public Map<Long, String> usersCurrentActionMap = new HashMap<>();
 
     private Map<String, String> buttonToLocationMap = new HashMap<>();
     private Map<String, String> buttonToManufacturerMap = new HashMap<>();
@@ -164,7 +164,7 @@ public class ForkliftManagementHelper {
                     forklift.setStatus(status);
                     forkliftService.saveForklift(forklift);
                     usersForkliftMap.remove(chatId);
-                    usersCurrentActionMap.remove(chatId);
+                    usersCurrentActionMap.put(chatId, "completed");
                     messageHelper.editAndSendMessage(chatId, "The details about the new forklift must be here.", messageId);
                     messageHelper.sendMessageWithKeyboard(chatId, "Forklift has been added successfully!", keyboardHelper.createStartKeyboard());
                     log.info("Forklift successfully saved for chatId: {}, forklift: {}", chatId, forklift);
