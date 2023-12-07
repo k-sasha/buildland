@@ -19,7 +19,7 @@ public class LocationManagementHelper {
     private final MessageHelper messageHelper;
 
     private Map<Long, Location> usersLocationMap = new HashMap<>();
-    public Map<Long, String> usersCurrentActionMap = new HashMap<>();
+    private Map<Long, String> usersCurrentActionMap = new HashMap<>();
 
     private static final String COMMAND_NOT_RECOGNIZED_MESSAGE = "Sorry, the command was not recognized";
 
@@ -30,6 +30,10 @@ public class LocationManagementHelper {
         this.locationService = locationService;
         this.keyboardHelper = keyboardHelper;
         this.messageHelper = messageHelper;
+    }
+
+    public Map<Long, String> getUsersCurrentActionMap() {
+        return usersCurrentActionMap;
     }
 
     public void addLocationCommandReceived(long chatId) {

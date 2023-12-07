@@ -21,7 +21,7 @@ public class ForkliftManagementHelper {
     private final MessageHelper messageHelper;
 
     private Map<Long, Forklift> usersForkliftMap = new HashMap<>();
-    public Map<Long, String> usersCurrentActionMap = new HashMap<>();
+    private Map<Long, String> usersCurrentActionMap = new HashMap<>();
 
     private Map<String, String> buttonToLocationMap = new HashMap<>();
     private Map<String, String> buttonToManufacturerMap = new HashMap<>();
@@ -56,6 +56,9 @@ public class ForkliftManagementHelper {
         buttonToStatusMap.put("SOLD_BUTTON", "sold");
     }
 
+    public Map<Long, String> getUsersCurrentActionMap() {
+        return usersCurrentActionMap;
+    }
 
     public void addForkliftCommandReceived(long chatId) {
 

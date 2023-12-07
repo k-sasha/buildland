@@ -87,15 +87,15 @@ public class BotController extends TelegramLongPollingBot {
             } else {
                 if ("forklift".equals(userStates.get(chatId))) {
                     forkliftManagementHelper.handleUserResponse(chatId, messageText);
-                    if ("completed".equals(forkliftManagementHelper.usersCurrentActionMap.get(chatId))) {
+                    if ("completed".equals(forkliftManagementHelper.getUsersCurrentActionMap().get(chatId))) {
                         userStates.remove(chatId); // Remove the user's state
-                        forkliftManagementHelper.usersCurrentActionMap.remove(chatId); // Also remove the state from the helper
+                        forkliftManagementHelper.getUsersCurrentActionMap().remove(chatId); // Also remove the state from the helper
                     }
                 } else if ("location".equals(userStates.get(chatId))) {
                     locationManagementHelper.handleUserResponse(chatId, messageText);
-                    if ("completed".equals(locationManagementHelper.usersCurrentActionMap.get(chatId))) {
+                    if ("completed".equals(locationManagementHelper.getUsersCurrentActionMap().get(chatId))) {
                         userStates.remove(chatId); // Remove the user's state
-                        forkliftManagementHelper.usersCurrentActionMap.remove(chatId); // Also remove the state from the helper
+                        locationManagementHelper.getUsersCurrentActionMap().remove(chatId); // Also remove the state from the helper
                     }
                 }
             }
