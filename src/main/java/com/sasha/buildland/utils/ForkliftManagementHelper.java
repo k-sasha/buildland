@@ -56,6 +56,9 @@ public class ForkliftManagementHelper {
         buttonToStatusMap.put("SOLD_BUTTON", "sold");
     }
 
+    public Map<Long, String> getUsersCurrentActionMap() {
+        return usersCurrentActionMap;
+    }
 
     public void addForkliftCommandReceived(long chatId) {
 
@@ -164,7 +167,7 @@ public class ForkliftManagementHelper {
                     forklift.setStatus(status);
                     forkliftService.saveForklift(forklift);
                     usersForkliftMap.remove(chatId);
-                    usersCurrentActionMap.remove(chatId);
+                    usersCurrentActionMap.put(chatId, "completed");
                     messageHelper.editAndSendMessage(chatId, "The details about the new forklift must be here.", messageId);
                     messageHelper.sendMessageWithKeyboard(chatId, "Forklift has been added successfully!", keyboardHelper.createStartKeyboard());
                     log.info("Forklift successfully saved for chatId: {}, forklift: {}", chatId, forklift);
