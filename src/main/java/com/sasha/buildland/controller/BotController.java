@@ -84,6 +84,8 @@ public class BotController extends TelegramLongPollingBot {
             } else if (messageText.equals("add location")) {
                 locationManagementHelper.addLocationCommandReceived(chatId);
                 userStates.put(chatId, "location");
+            } else if (messageText.equals("delete")) { // if button pushed with start keyboard
+                messageHelper.sendMessageWithKeyboard(chatId, "what do you want to delete?", keyboardHelper.createDeleteKeyboard());
             } else {
                 if ("forklift".equals(userStates.get(chatId))) {
                     forkliftManagementHelper.handleUserResponse(chatId, messageText);
@@ -110,6 +112,7 @@ public class BotController extends TelegramLongPollingBot {
             forkliftManagementHelper.handleUserResponseWithInlineKeyboard(chatId, callBackData, messageId);
 
         }
+
     }
 
     private void handleCommand(long chatId, String command, Update update) {

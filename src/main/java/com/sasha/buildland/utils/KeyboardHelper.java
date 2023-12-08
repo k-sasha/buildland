@@ -110,5 +110,27 @@ public class KeyboardHelper {
     }
 
 
+    public ReplyKeyboardMarkup createDeleteKeyboard() {
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
 
+        //create a list of rows
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        // first row of buttons
+        KeyboardRow row = new KeyboardRow();
+        row.add("delete forklift");
+        row.add("delete location");
+        keyboardRows.add(row); // add the row to the list
+
+        // second row of buttons
+        row = new KeyboardRow();
+        row.add("delete manufacturer");
+        row.add("main menu");
+        keyboardRows.add(row); // add the row to the list
+
+        // add to the keyboard
+        keyboardMarkup.setKeyboard(keyboardRows);
+
+        return keyboardMarkup;
+    }
 }
