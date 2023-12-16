@@ -1,5 +1,6 @@
 package com.sasha.buildland.utils;
 
+import com.sasha.buildland.entity.InlineKeyboardObject;
 import com.sasha.buildland.entity.Location;
 import com.sasha.buildland.service.LocationService;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +9,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -61,4 +63,35 @@ public class LocationManagementHelper {
         log.info("Location successfully saved for chatId: {}, location: {}", chatId, location);
     }
 
+    public void deleteLocationCommandReceived(long chatId) {
+
+        usersCurrentActionMap.put(chatId, "delete_location");
+        messageHelper.sendMessageWithKeyboard(chatId, "Delete location", keyboardHelper.createReturnKeyboard());
+        String text = "Please select a location to delete:";
+        List<Location> locations = locationService.getAllLocations();
+        messageHelper.sendMessageWithInlineKeyboard2(locations, text, chatId);
+        log.info("Initiated location deleting process for chatId: {}", chatId);
+    }
+
+    public void handleUserResponseWithInlineKeyboard(long chatId, String callBackData, long messageId) {
+        if ("delete_location".equals(usersCurrentActionMap.get(chatId))) {
+            InlineKeyboardObject location = keyboardHelper.getButtonMap().get(callBackData);
+            if (location != null) {
+                Long locationId = location.getId();
+                String locationName = location.getName();
+                locationService.deleteLocation(locationId);
+                usersLocationMap.remove(chatId);
+                usersCurrentActionMap.put(chatId, "completed");
+                messageHelper.editAndSendMessage(chatId, "Deleting the location " + locationName, messageId);
+                messageHelper.sendMessageWithKeyboard(chatId, "Location " + locationName + " has been deleted successfully!", keyboardHelper.createStartKeyboard());
+                log.info("Location successfully deleted for chatId: {}, location: {}", chatId, locationName);
+            } else {
+                messageHelper.prepareAndSendMessage(chatId, "Sorry, the location was not recognized");
+                log.warn("Unrecognized location from callback data '{}' for chatId: {}", callBackData, chatId);
+            }
+        } else {
+            messageHelper.prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
+            log.warn("Unrecognized action for chatId: {}.", chatId);
+        }
+    }
 }

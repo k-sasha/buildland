@@ -80,20 +80,23 @@ public class BotController extends TelegramLongPollingBot {
                 messageHelper.sendMessageWithKeyboard(chatId, "what do you want to add?", keyboardHelper.createAddKeyboard());
             } else if (messageText.equals("add forklift")) {
                 forkliftManagementHelper.addForkliftCommandReceived(chatId);
-                userStates.put(chatId, "forklift");
+                userStates.put(chatId, "add_forklift");
             } else if (messageText.equals("add location")) {
                 locationManagementHelper.addLocationCommandReceived(chatId);
-                userStates.put(chatId, "location");
+                userStates.put(chatId, "add_location");
             } else if (messageText.equals("delete")) { // if button pushed with start keyboard
                 messageHelper.sendMessageWithKeyboard(chatId, "what do you want to delete?", keyboardHelper.createDeleteKeyboard());
+            } else if (messageText.equals("delete location")) {
+                locationManagementHelper.deleteLocationCommandReceived(chatId);
+                userStates.put(chatId, "delete_location");
             } else {
-                if ("forklift".equals(userStates.get(chatId))) {
+                if ("add_forklift".equals(userStates.get(chatId))) {
                     forkliftManagementHelper.handleUserResponse(chatId, messageText);
                     if ("completed".equals(forkliftManagementHelper.getUsersCurrentActionMap().get(chatId))) {
                         userStates.remove(chatId); // Remove the user's state
                         forkliftManagementHelper.getUsersCurrentActionMap().remove(chatId); // Also remove the state from the helper
                     }
-                } else if ("location".equals(userStates.get(chatId))) {
+                } else if ("add_location".equals(userStates.get(chatId))) {
                     locationManagementHelper.handleUserResponse(chatId, messageText);
                     if ("completed".equals(locationManagementHelper.getUsersCurrentActionMap().get(chatId))) {
                         userStates.remove(chatId); // Remove the user's state
@@ -109,7 +112,15 @@ public class BotController extends TelegramLongPollingBot {
             long chatId = update.getCallbackQuery().getMessage().getChatId();
             log.info("Callback query received from chatId: {}. Data: {}", chatId, callBackData);
 
-            forkliftManagementHelper.handleUserResponseWithInlineKeyboard(chatId, callBackData, messageId);
+            if("add_forklift".equals(userStates.get(chatId))) {
+                forkliftManagementHelper.handleUserResponseWithInlineKeyboard(chatId, callBackData, messageId);
+            } else if("delete_location".equals(userStates.get(chatId))){
+                locationManagementHelper.handleUserResponseWithInlineKeyboard(chatId, callBackData, messageId);
+                if ("completed".equals(locationManagementHelper.getUsersCurrentActionMap().get(chatId))) {
+                    userStates.remove(chatId); // Remove the user's state
+                    locationManagementHelper.getUsersCurrentActionMap().remove(chatId); // Also remove the state from the helper
+                }
+            }
 
         }
 

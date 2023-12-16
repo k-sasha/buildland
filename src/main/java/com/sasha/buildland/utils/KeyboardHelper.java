@@ -1,5 +1,6 @@
 package com.sasha.buildland.utils;
 
+import com.sasha.buildland.entity.InlineKeyboardObject;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -7,12 +8,19 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class KeyboardHelper {
 
     private static final String BUTTON_SUFFIX = "_BUTTON";
+    private Map<String, InlineKeyboardObject> buttonMap = new HashMap<>();
+
+    public Map<String, InlineKeyboardObject> getButtonMap() {
+        return buttonMap;
+    }
 
     public ReplyKeyboardMarkup createStartKeyboard() {
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
@@ -108,6 +116,39 @@ public class KeyboardHelper {
 
         return markupInline;
     }
+
+    public InlineKeyboardMarkup createInlineKeyboard2(List<? extends InlineKeyboardObject> objectNames) {
+        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+
+        for (int i = 0; i < objectNames.size(); i+=2) {
+            List<InlineKeyboardButton> rowInline = new ArrayList<>();
+
+            InlineKeyboardObject firstObjectName = objectNames.get(i);
+            var firstButton = new InlineKeyboardButton();
+            firstButton.setText(firstObjectName.getName());
+            String button1 = firstObjectName.getName() + BUTTON_SUFFIX;
+            firstButton.setCallbackData(button1);
+            buttonMap.put(button1, firstObjectName);
+            rowInline.add(firstButton);
+
+            if (i + 1 < objectNames.size()) {
+                InlineKeyboardObject secondObjectName = objectNames.get(i + 1);
+                var secondButton = new InlineKeyboardButton();
+                secondButton.setText(secondObjectName.getName());
+                String button2 = secondObjectName.getName() + BUTTON_SUFFIX;
+                secondButton.setCallbackData(button2);
+                buttonMap.put(button2, secondObjectName);
+                rowInline.add(secondButton);
+            }
+
+            rowsInline.add(rowInline);
+        }
+
+        markupInline.setKeyboard(rowsInline);
+        return markupInline;
+    }
+
 
 
     public ReplyKeyboardMarkup createDeleteKeyboard() {

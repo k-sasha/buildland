@@ -11,7 +11,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Location {
+public class Location implements InlineKeyboardObject {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "locationSeq")
     @SequenceGenerator(name = "locationSeq", sequenceName = "location_seq", allocationSize = 1)
@@ -21,4 +21,13 @@ public class Location {
     @Column(name = "location")
     private String location;
 
+    @Override
+    public Long getId() {
+        return this.id;
+    }
+
+    @Override
+    public String getName() {
+        return this.location;
+    }
 }
