@@ -1,7 +1,6 @@
 package com.sasha.buildland.utils;
 
 import com.sasha.buildland.entity.InlineKeyboardObject;
-import com.sasha.buildland.entity.Location;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -113,6 +112,25 @@ public class MessageHelper {
         executeMessage(message);  // send message
     }
 
+    public void sendMessageConfirmationWithInlineKeyboard(String text, long chatId
+            , long messageId) {
+        BotApiMethod<?> message = prepareMessage(chatId, text, messageId, true);
+
+        InlineKeyboardMarkup markupInline= keyboardHelper.createInlineKeyboardConfirmation();
+
+        // check return type from prepareMessage() method
+        if (message instanceof EditMessageText) {
+            EditMessageText editMessage = (EditMessageText) message;
+            editMessage.setReplyMarkup(markupInline);  // Set the reply markup for the message, which in this case is an inline keyboard
+        } else if (message instanceof SendMessage) {
+            SendMessage sendMessage = (SendMessage) message;
+            sendMessage.setReplyMarkup(markupInline); // Set the reply markup for the message, which in this case is an inline keyboard
+        }
+
+        log.info("Preparing and sending message with inline keyboard to chatId {}: {}", chatId, text);
+        executeMessage(message);  // send message
+    }
+
     public void sendMessageWithInlineKeyboard2(List<? extends InlineKeyboardObject> objectNames, String text, long chatId) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
@@ -121,23 +139,6 @@ public class MessageHelper {
         InlineKeyboardMarkup markupInline = keyboardHelper.createInlineKeyboard2(objectNames);
 
         message.setReplyMarkup(markupInline);
-
-        log.info("Preparing and sending message with inline keyboard to chatId {}: {}", chatId, text);
-        executeMessage(message);
-    }
-
-    public void sendMessageWithInlineKeyboard2(List<? extends InlineKeyboardObject> objectNames, String text, long chatId, long messageId) {
-        BotApiMethod<?> message = prepareMessage(chatId, text, messageId, true);
-
-        InlineKeyboardMarkup markupInline = keyboardHelper.createInlineKeyboard2(objectNames);
-
-        if (message instanceof EditMessageText) {
-            EditMessageText editMessage = (EditMessageText) message;
-            editMessage.setReplyMarkup(markupInline);
-        } else if (message instanceof SendMessage) {
-            SendMessage sendMessage = (SendMessage) message;
-            sendMessage.setReplyMarkup(markupInline);
-        }
 
         log.info("Preparing and sending message with inline keyboard to chatId {}: {}", chatId, text);
         executeMessage(message);

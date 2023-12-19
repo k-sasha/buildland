@@ -8,18 +8,24 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
+
 
 @Component
 public class KeyboardHelper {
 
     private static final String BUTTON_SUFFIX = "_BUTTON";
     private Map<String, InlineKeyboardObject> buttonMap = new HashMap<>();
+    private Map<String, String> confirmationButtonMap = new HashMap<>();
 
     public Map<String, InlineKeyboardObject> getButtonMap() {
         return buttonMap;
+    }
+
+    public Map<String, String> getConfirmationButtonMap() {
+        return confirmationButtonMap;
     }
 
     public ReplyKeyboardMarkup createStartKeyboard() {
@@ -93,7 +99,7 @@ public class KeyboardHelper {
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>(); // create rows
 
         // For each list's element
-        for (int i = 0; i < list.size(); i+=2) {
+        for (int i = 0; i < list.size(); i += 2) {
             List<InlineKeyboardButton> rowInline = new ArrayList<>();  // create one row
 
             var firstButton = new InlineKeyboardButton();  // create first button
@@ -117,11 +123,38 @@ public class KeyboardHelper {
         return markupInline;
     }
 
+    public InlineKeyboardMarkup createInlineKeyboardConfirmation() {
+        //  create keyboard with buttons from List
+        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>(); // create rows
+
+        List<InlineKeyboardButton> rowInline = new ArrayList<>();  // create one row
+
+        var yesButton = new InlineKeyboardButton();
+        yesButton.setText("Yes");
+        yesButton.setCallbackData("YES_BUTTON");
+        confirmationButtonMap.put("YES_BUTTON", "Yes");
+
+        var noButton = new InlineKeyboardButton();
+        noButton.setText("No");
+        noButton.setCallbackData("NO_BUTTON");
+        confirmationButtonMap.put("NO_BUTTON", "No");
+
+        rowInline.add(yesButton); // add to the row
+        rowInline.add(noButton);
+
+        rowsInline.add(rowInline); // add row to rows
+
+        markupInline.setKeyboard(rowsInline); //add to the keyboard
+
+        return markupInline;
+}
+
     public InlineKeyboardMarkup createInlineKeyboard2(List<? extends InlineKeyboardObject> objectNames) {
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
 
-        for (int i = 0; i < objectNames.size(); i+=2) {
+        for (int i = 0; i < objectNames.size(); i += 2) {
             List<InlineKeyboardButton> rowInline = new ArrayList<>();
 
             InlineKeyboardObject firstObjectName = objectNames.get(i);
@@ -148,7 +181,6 @@ public class KeyboardHelper {
         markupInline.setKeyboard(rowsInline);
         return markupInline;
     }
-
 
 
     public ReplyKeyboardMarkup createDeleteKeyboard() {

@@ -74,24 +74,48 @@ public class LocationManagementHelper {
     }
 
     public void handleUserResponseWithInlineKeyboard(long chatId, String callBackData, long messageId) {
-        if ("delete_location".equals(usersCurrentActionMap.get(chatId))) {
-            InlineKeyboardObject location = keyboardHelper.getButtonMap().get(callBackData);
-            if (location != null) {
-                Long locationId = location.getId();
-                String locationName = location.getName();
-                locationService.deleteLocation(locationId);
-                usersLocationMap.remove(chatId);
-                usersCurrentActionMap.put(chatId, "completed");
-                messageHelper.editAndSendMessage(chatId, "Deleting the location " + locationName, messageId);
-                messageHelper.sendMessageWithKeyboard(chatId, "Location " + locationName + " has been deleted successfully!", keyboardHelper.createStartKeyboard());
-                log.info("Location successfully deleted for chatId: {}, location: {}", chatId, locationName);
-            } else {
-                messageHelper.prepareAndSendMessage(chatId, "Sorry, the location was not recognized");
-                log.warn("Unrecognized location from callback data '{}' for chatId: {}", callBackData, chatId);
+        switch (usersCurrentActionMap.get(chatId)) {
+            case "delete_location": {
+                InlineKeyboardObject location = keyboardHelper.getButtonMap().get(callBackData);
+                if (location != null) {
+                    usersLocationMap.put(chatId, (Location) location);
+                    String locationName = location.getName();
+                    usersCurrentActionMap.put(chatId, "deletion_confirmation");
+                    messageHelper.sendMessageConfirmationWithInlineKeyboard("Do you really want to delete the " + locationName + " location", chatId, messageId);
+                    log.info("Deletion request for location: {} by chatId: {}", locationName, chatId);
+                } else {
+                    messageHelper.prepareAndSendMessage(chatId, "Sorry, the command was not recognized");
+                    log.warn("Command not recognized for chatId: {}", chatId);
+                }
+                break;
             }
-        } else {
-            messageHelper.prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
-            log.warn("Unrecognized action for chatId: {}.", chatId);
+            case "deletion_confirmation": {
+                String confirmation = keyboardHelper.getConfirmationButtonMap().get(callBackData);
+                System.out.println(confirmation);
+
+                Location location = usersLocationMap.get(chatId);
+                Long locationId = location.getId(); // null?
+                String locationName = location.getName();
+                if (confirmation.equals("Yes")) {
+                    locationService.deleteLocation(locationId);
+                    usersLocationMap.remove(chatId);
+                    usersCurrentActionMap.put(chatId, "completed");
+                    messageHelper.editAndSendMessage(chatId, "Deleting the location " + locationName, messageId);
+                    messageHelper.sendMessageWithKeyboard(chatId, "Location " + locationName + " has been deleted successfully!", keyboardHelper.createStartKeyboard());
+                    log.info("Location {} deleted for chatId: {}", locationName, chatId);
+                } else if (confirmation.equals("No")) {
+                    usersLocationMap.remove(chatId);
+                    usersCurrentActionMap.put(chatId, "completed");
+                    messageHelper.prepareAndSendMessage(chatId, "Location deletion canceled");
+                    messageHelper.sendMessageWithKeyboard(chatId, "Deletion of " + locationName + " location has been canceled!", keyboardHelper.createStartKeyboard());
+                    log.info("Location deletion canceled for chatId: {}", chatId);
+                }
+                break;
+            }
+            default:
+                messageHelper.prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
+                log.warn("Unrecognized action for chatId: {}.", chatId);
+                break;
         }
     }
 }
