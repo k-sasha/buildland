@@ -94,7 +94,7 @@ public class LocationManagementHelper {
                 System.out.println(confirmation);
 
                 Location location = usersLocationMap.get(chatId);
-                Long locationId = location.getId(); // null?
+                Long locationId = location.getId();
                 String locationName = location.getName();
                 if (confirmation.equals("Yes")) {
                     locationService.deleteLocation(locationId);
@@ -106,7 +106,7 @@ public class LocationManagementHelper {
                 } else if (confirmation.equals("No")) {
                     usersLocationMap.remove(chatId);
                     usersCurrentActionMap.put(chatId, "completed");
-                    messageHelper.prepareAndSendMessage(chatId, "Location deletion canceled");
+                    messageHelper.editAndSendMessage(chatId, "Location deletion canceled", messageId);
                     messageHelper.sendMessageWithKeyboard(chatId, "Deletion of " + locationName + " location has been canceled!", keyboardHelper.createStartKeyboard());
                     log.info("Location deletion canceled for chatId: {}", chatId);
                 }
