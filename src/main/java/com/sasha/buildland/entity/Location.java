@@ -4,7 +4,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.SequenceGenerator;
 
 @Entity
 @Table(name = "locations")
@@ -19,7 +25,7 @@ public class Location implements InlineKeyboardObject {
     private Long id;
 
     @Column(name = "location")
-    private String location;
+    private String locationName;
 
     @Override
     public Long getId() {
@@ -28,6 +34,6 @@ public class Location implements InlineKeyboardObject {
 
     @Override
     public String getName() {
-        return this.location;
+        return this.locationName;
     }
 }

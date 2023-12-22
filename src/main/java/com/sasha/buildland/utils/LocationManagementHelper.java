@@ -24,6 +24,7 @@ public class LocationManagementHelper {
     private Map<Long, String> usersCurrentActionMap = new HashMap<>();
 
     private static final String COMMAND_NOT_RECOGNIZED_MESSAGE = "Sorry, the command was not recognized";
+    private static final String COMPLETED = "completed";
 
     @Autowired
     public LocationManagementHelper(LocationService locationService,
@@ -55,10 +56,10 @@ public class LocationManagementHelper {
             return;
         }
 
-        location.setLocation(response);
+        location.setLocationName(response);
         locationService.saveLocation(location);
         usersLocationMap.remove(chatId);
-        usersCurrentActionMap.put(chatId, "completed");
+        usersCurrentActionMap.put(chatId, COMPLETED);
         messageHelper.sendMessageWithKeyboard(chatId, "Location " + response + " has been added successfully!", keyboardHelper.createStartKeyboard());
         log.info("Location successfully saved for chatId: {}, location: {}", chatId, location);
     }
@@ -99,13 +100,13 @@ public class LocationManagementHelper {
                 if (confirmation.equals("Yes")) {
                     locationService.deleteLocation(locationId);
                     usersLocationMap.remove(chatId);
-                    usersCurrentActionMap.put(chatId, "completed");
+                    usersCurrentActionMap.put(chatId, COMPLETED);
                     messageHelper.editAndSendMessage(chatId, "Deleting the location " + locationName, messageId);
                     messageHelper.sendMessageWithKeyboard(chatId, "Location " + locationName + " has been deleted successfully!", keyboardHelper.createStartKeyboard());
                     log.info("Location {} deleted for chatId: {}", locationName, chatId);
                 } else if (confirmation.equals("No")) {
                     usersLocationMap.remove(chatId);
-                    usersCurrentActionMap.put(chatId, "completed");
+                    usersCurrentActionMap.put(chatId, COMPLETED);
                     messageHelper.editAndSendMessage(chatId, "Location deletion canceled", messageId);
                     messageHelper.sendMessageWithKeyboard(chatId, "Deletion of " + locationName + " location has been canceled!", keyboardHelper.createStartKeyboard());
                     log.info("Location deletion canceled for chatId: {}", chatId);

@@ -23,8 +23,7 @@ public class LocationServiceImpl implements LocationService{
 
     @Override
     public List<Location> getAllLocations() {
-        List<Location> locations= (List<Location>) locationRepository.findAll();
-        return locations;
+        return (List<Location>) locationRepository.findAll();
     }
 
     public void deleteLocation(Long locationId) {
