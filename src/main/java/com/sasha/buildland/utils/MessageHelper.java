@@ -1,5 +1,6 @@
 package com.sasha.buildland.utils;
 
+import com.sasha.buildland.entity.InlineKeyboardObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -109,6 +110,38 @@ public class MessageHelper {
 
         log.info("Preparing and sending message with inline keyboard to chatId {}: {}", chatId, text);
         executeMessage(message);  // send message
+    }
+
+    public void sendMessageConfirmationWithInlineKeyboard(String text, long chatId
+            , long messageId) {
+        BotApiMethod<?> message = prepareMessage(chatId, text, messageId, true);
+
+        InlineKeyboardMarkup markupInline= keyboardHelper.createInlineKeyboardConfirmation();
+
+        // check return type from prepareMessage() method
+        if (message instanceof EditMessageText) {
+            EditMessageText editMessage = (EditMessageText) message;
+            editMessage.setReplyMarkup(markupInline);  // Set the reply markup for the message, which in this case is an inline keyboard
+        } else if (message instanceof SendMessage) {
+            SendMessage sendMessage = (SendMessage) message;
+            sendMessage.setReplyMarkup(markupInline); // Set the reply markup for the message, which in this case is an inline keyboard
+        }
+
+        log.info("Preparing and sending message with inline keyboard to chatId {}: {}", chatId, text);
+        executeMessage(message);  // send message
+    }
+
+    public void sendMessageWithInlineKeyboard2(List<? extends InlineKeyboardObject> objectNames, String text, long chatId) {
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText(text);   // Set the text of the message to be sent
+
+        InlineKeyboardMarkup markupInline = keyboardHelper.createInlineKeyboard2(objectNames);
+
+        message.setReplyMarkup(markupInline);
+
+        log.info("Preparing and sending message with inline keyboard to chatId {}: {}", chatId, text);
+        executeMessage(message);
     }
 
     public void executeMessage(BotApiMethod<?> message) { // BotApiMethod<?> includes SendMessage and EditMessageText classes
