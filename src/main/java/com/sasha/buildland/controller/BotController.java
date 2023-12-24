@@ -1,10 +1,7 @@
 package com.sasha.buildland.controller;
 
 import com.sasha.buildland.config.BotConfig;
-import com.sasha.buildland.utils.ForkliftManagementHelper;
-import com.sasha.buildland.utils.KeyboardHelper;
-import com.sasha.buildland.utils.LocationManagementHelper;
-import com.sasha.buildland.utils.MessageHelper;
+import com.sasha.buildland.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,6 +32,9 @@ public class BotController extends TelegramLongPollingBot {
     private LocationManagementHelper locationManagementHelper;
 
     @Autowired
+    private ManufacturerManagementHelper manufacturerManagementHelper;
+
+    @Autowired
     private KeyboardHelper keyboardHelper;
 
     @Autowired
@@ -46,6 +46,8 @@ public class BotController extends TelegramLongPollingBot {
     private static final String ADD_FORKLIFT = "add_forklift";
     private static final String ADD_LOCATION = "add_location";
     private static final String DELETE_LOCATION = "delete_location";
+    private static final String ADD_MANUFACTURER = "add_manufacturer";
+    private static final String DELETE_MANUFACTURER = "delete_manufacturer";
     private static final String COMPLETED = "completed";
 
     public BotController(BotConfig config) {
@@ -88,12 +90,18 @@ public class BotController extends TelegramLongPollingBot {
             } else if (messageText.equals("add location")) {
                 locationManagementHelper.addLocationCommandReceived(chatId);
                 userStates.put(chatId, ADD_LOCATION);
+            } else if (messageText.equals("add manufacturer")) {
+                manufacturerManagementHelper.addManufacturerCommandReceived(chatId);
+                userStates.put(chatId, ADD_MANUFACTURER);
             } else if (messageText.equals("delete")) { // if button pushed with start keyboard
                 messageHelper.sendMessageWithKeyboard(chatId, "what do you want to delete?", keyboardHelper.createDeleteKeyboard());
             } else if (messageText.equals("delete location")) {
                 locationManagementHelper.deleteLocationCommandReceived(chatId);
                 userStates.put(chatId, DELETE_LOCATION);
-            } else {
+            } else if (messageText.equals("delete manufacturer")) {
+                manufacturerManagementHelper.deleteManufacturerCommandReceived(chatId);
+                userStates.put(chatId, DELETE_MANUFACTURER);
+            }else {
                 if (ADD_FORKLIFT.equals(userStates.get(chatId))) {
                     forkliftManagementHelper.handleUserResponse(chatId, messageText);
                     if (COMPLETED.equals(forkliftManagementHelper.getUsersCurrentActionMap().get(chatId))) {
@@ -105,6 +113,12 @@ public class BotController extends TelegramLongPollingBot {
                     if (COMPLETED.equals(locationManagementHelper.getUsersCurrentActionMap().get(chatId))) {
                         userStates.remove(chatId); // Remove the user's state
                         locationManagementHelper.getUsersCurrentActionMap().remove(chatId); // Also remove the state from the helper
+                    }
+                } else if (ADD_MANUFACTURER.equals(userStates.get(chatId))) {
+                    manufacturerManagementHelper.handleUserResponse(chatId, messageText);
+                    if (COMPLETED.equals(manufacturerManagementHelper.getUsersCurrentActionMap().get(chatId))) {
+                        userStates.remove(chatId); // Remove the user's state
+                        manufacturerManagementHelper.getUsersCurrentActionMap().remove(chatId); // Also remove the state from the helper
                     }
                 }
             }
@@ -123,6 +137,12 @@ public class BotController extends TelegramLongPollingBot {
                 if (COMPLETED.equals(locationManagementHelper.getUsersCurrentActionMap().get(chatId))) {
                     userStates.remove(chatId); // Remove the user's state
                     locationManagementHelper.getUsersCurrentActionMap().remove(chatId); // Also remove the state from the helper
+                }
+            } else if(DELETE_MANUFACTURER.equals(userStates.get(chatId))){
+                manufacturerManagementHelper.handleUserResponseWithInlineKeyboard(chatId, callBackData, messageId);
+                if (COMPLETED.equals(manufacturerManagementHelper.getUsersCurrentActionMap().get(chatId))) {
+                    userStates.remove(chatId); // Remove the user's state
+                    manufacturerManagementHelper.getUsersCurrentActionMap().remove(chatId); // Also remove the state from the helper
                 }
             }
 
