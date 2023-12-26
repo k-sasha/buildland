@@ -86,7 +86,7 @@ public class ManufacturerManagementHelper {
                     messageHelper.sendMessageConfirmationWithInlineKeyboard("Do you really want to delete the " + manufacturerName + " manufacturer", chatId, messageId);
                     log.info("Deletion request for manufacturer: {} by chatId: {}", manufacturerName, chatId);
                 } else {
-                    messageHelper.prepareAndSendMessage(chatId, "Sorry, the command was not recognized");
+                    messageHelper.prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
                     log.warn("Command not recognized for chatId: {}", chatId);
                 }
                 break;

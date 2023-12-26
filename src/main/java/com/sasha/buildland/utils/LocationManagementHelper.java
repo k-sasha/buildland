@@ -85,7 +85,7 @@ public class LocationManagementHelper {
                     messageHelper.sendMessageConfirmationWithInlineKeyboard("Do you really want to delete the " + locationName + " location", chatId, messageId);
                     log.info("Deletion request for location: {} by chatId: {}", locationName, chatId);
                 } else {
-                    messageHelper.prepareAndSendMessage(chatId, "Sorry, the command was not recognized");
+                    messageHelper.prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
                     log.warn("Command not recognized for chatId: {}", chatId);
                 }
                 break;
