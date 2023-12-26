@@ -7,4 +7,8 @@ databaseChangeLog:
       file: db/changelog/changeset/create-locations-table.yaml
   - include:
       file: db/changelog/changeset/create-sequence-location_seq.yaml
+  - include: # List of active migrations
+      file: db/changelog/changeset/create-manufacturers-table.yaml
+  - include:
+      file: db/changelog/changeset/create-sequence-manufacturer_seq.yaml
 
