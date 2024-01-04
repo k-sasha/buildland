@@ -1,0 +1,30 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-forklift_technical_details_table #  Textual identifier (Required)
+      author: Aleksanra Anisimova #  Author (Required)
+      changes:
+        - createTable: # create new table
+            tableName: forklift_technical_details
+            columns: # column declarations
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: engine_hours
+                  type: int
+              - column:
+                  name: fuel_type
+                  type: varchar(100)
+              - column:
+                  name: load_capacity
+                  type: int
+              - column:
+                  name: operating_weight
+                  type: int
+              - column:
+                  name: transmission_type
+                  type: varchar(100)
