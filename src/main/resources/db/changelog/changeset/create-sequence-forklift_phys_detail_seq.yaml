@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-sequence # Textual identifier (Required)
+      author: Aleksanra Anisimova # Author (Required)
+      changes:
+        - createSequence: # creat new sequence
+            sequenceName: forklift_phys_detail_seq
+            incrementBy: 1
+            maxValue: 1000
+            startValue: 1

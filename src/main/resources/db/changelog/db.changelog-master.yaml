@@ -11,4 +11,12 @@ databaseChangeLog:
       file: db/changelog/changeset/create-manufacturers-table.yaml
   - include:
       file: db/changelog/changeset/create-sequence-manufacturer_seq.yaml
+  - include: # List of active migrations
+      file: db/changelog/changeset/create-forklift_technical_details-table.yaml
+  - include:
+      file: db/changelog/changeset/create-sequence-forklift_tech_detail_seq.yaml
+  - include: # List of active migrations
+      file: db/changelog/changeset/create-forklift_physical_details.yaml
+  - include:
+      file: db/changelog/changeset/create-sequence-forklift_phys_detail_seq.yaml
 

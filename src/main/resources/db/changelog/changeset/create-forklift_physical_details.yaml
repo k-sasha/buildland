@@ -1,0 +1,27 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-forklift_physical_details_table #  Textual identifier (Required)
+      author: Aleksanra Anisimova #  Author (Required)
+      changes:
+        - createTable:  # create new table
+            tableName: forklift_physical_details
+            columns: # column declarations
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: data_plate
+                  type: varchar(100)
+              - column:
+                  name: tire
+                  type: varchar(100)
+              - column:
+                  name: stage
+                  type: varchar(100)
+              - column:
+                  name: condition
+                  type: varchar(100)
