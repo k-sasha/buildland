@@ -1,9 +1,16 @@
 package com.sasha.buildland.entity;
 
+import com.sasha.buildland.enums.Status;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -17,6 +24,7 @@ import javax.persistence.SequenceGenerator;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Forklift {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "forkliftSeq")
@@ -24,36 +32,35 @@ public class Forklift {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "manufacturer")
-    private String manufacturer;
+    @Column(name = "inventory_number")
+    private int number;
 
-    @Column(name = "model")
+    @ManyToOne
+    @JoinColumn(name = "manufacturer_id")
+    private Manufacturer manufacturer;
+
+    @Column(name = "forklift_model")
     private String model;
 
-    @Column(name = "capacity")
-    private int capacity;
+    @Column(name = "serial_number")
+    private String serial;
 
-    @Column(name = "year")
-    private int year;
+    @ManyToOne
+    @JoinColumn(name = "location_id")
+    private Location location;
 
-    @Column(name = "hours")
-    private Long hours;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "forklift_status")
+    private Status status;
 
-    @Column(name = "location")
-    private String location;
+    @OneToOne
+    @JoinColumn(name = "technical_details_id")
+    private ForkliftTechnicalDetails technicalDetails;
 
-    @Column(name = "status")
-    private String status;
+    @OneToOne
+    @JoinColumn(name = "physical_details_id")
+    private ForkliftPhysicalDetails physicalDetails;
 
-    public Forklift(Long id, String manufacturer, String model, int capacity, int year, Long hours,
-                    String location, String status) {
-        this.id = id;
-        this.manufacturer = manufacturer;
-        this.model = model;
-        this.capacity = capacity;
-        this.year = year;
-        this.hours = hours;
-        this.location = location;
-        this.status = status;
-    }
+    @Column(name = "sale_price")
+    private int price;
 }

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.OneToMany;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -11,6 +12,7 @@ import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.SequenceGenerator;
+import java.util.List;
 
 @Entity
 @Table(name = "locations")
@@ -26,6 +28,9 @@ public class Location implements InlineKeyboardObject {
 
     @Column(name = "location")
     private String locationName;
+
+    @OneToMany(mappedBy = "location")
+    private List<Forklift> forklifts;
 
     @Override
     public Long getId() {

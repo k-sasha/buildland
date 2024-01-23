@@ -1,0 +1,48 @@
+databaseChangeLog:
+  - changeSet:
+      id: update-forklifts-table-structure #  Textual identifier (Required)
+      author: Aleksanra Anisimova #  Author (Required)
+      changes:
+      # delete old columns
+          - dropColumn:
+              tableName: forklifts
+              columnName: manufacturer
+          - dropColumn:
+              tableName: forklifts
+              columnName: capacity
+          - dropColumn:
+              tableName: forklifts
+              columnName: year
+          - dropColumn:
+              tableName: forklifts
+              columnName: hours
+          - dropColumn:
+              tableName: forklifts
+              columnName: location
+          - dropColumn:
+              tableName: forklifts
+              columnName: status
+
+      # Rename model column
+          - renameColumn:
+              tableName: forklifts
+              oldColumnName: model
+              newColumnName: forklift_model
+              columnDataType: varchar(100)
+
+      # add new columns
+          - addColumn:
+              tableName: forklifts
+              columns:
+                 - column:
+                     name: inventory_number
+                     type: int
+                 - column:
+                     name: serial_number
+                     type: varchar(100)
+                 - column:
+                     name: sale_price
+                     type: int
+                 - column:
+                     name: forklift_status
+                     type: varchar(100)

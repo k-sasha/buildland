@@ -78,54 +78,54 @@ public class ForkliftManagementHelper {
             return;
         }
 
-        switch (usersCurrentActionMap.get(chatId)) {
-            case "set_model":
-                forklift.setModel(response);
-                usersCurrentActionMap.put(chatId, "set_capacity");
-                messageHelper.prepareAndSendMessage(chatId, "Please set the capacity:");
-                log.info("User response for chatId {}: set model to {}", chatId, response);
-                break;
-            case "set_capacity":
-                try {
-                    int capacity = Integer.parseInt(response);
-                    forklift.setCapacity(capacity);
-                    usersCurrentActionMap.put(chatId, "set_year");
-                    messageHelper.prepareAndSendMessage(chatId, "Please set the year:");
-                    log.info("User response for chatId {}: set capacity to {}", chatId, response);
-                } catch (NumberFormatException e) {
-                    messageHelper.prepareAndSendMessage(chatId, "Invalid capacity. Please enter a valid number.");
-                    log.error("NumberFormatException for chatId {}: {}", chatId, e.getMessage());
-                }
-                break;
-            case "set_year":
-                try {
-                    int year = Integer.parseInt(response);
-                    forklift.setYear(year);
-                    usersCurrentActionMap.put(chatId, "set_hours");
-                    messageHelper.prepareAndSendMessage(chatId, "Please set the hours:");
-                    log.info("User response for chatId {}: set year to {}", chatId, response);
-                } catch (NumberFormatException e) {
-                    messageHelper.prepareAndSendMessage(chatId, "Invalid year. Please enter a valid number.");
-                    log.error("NumberFormatException for chatId {}: {}", chatId, e.getMessage());
-                }
-                break;
-            case "set_hours":
-                try {
-                    Long hours = Long.parseLong(response);
-                    forklift.setHours(hours);
-                    usersCurrentActionMap.put(chatId, "set_location");
-                    String text = "Please set the location:";
-                    messageHelper.sendMessageWithInlineKeyboard(locations, text, chatId);
-                    log.info("User response for chatId {}: set hours to {}", chatId, response);
-                } catch (NumberFormatException e) {
-                    messageHelper.prepareAndSendMessage(chatId, "Invalid hours. Please enter a valid number.");
-                    log.error("NumberFormatException for chatId {}: {}", chatId, e.getMessage());
-                }
-                break;
-            default:
-                messageHelper.prepareAndSendMessage(chatId, "Sorry, I didn't understand that. Please click on the button");
-                log.warn("Unrecognized action for chatId: {}. User response: '{}'", chatId, response);
-        }
+//        switch (usersCurrentActionMap.get(chatId)) {
+//            case "set_model":
+//                forklift.setModel(response);
+//                usersCurrentActionMap.put(chatId, "set_capacity");
+//                messageHelper.prepareAndSendMessage(chatId, "Please set the capacity:");
+//                log.info("User response for chatId {}: set model to {}", chatId, response);
+//                break;
+//            case "set_capacity":
+//                try {
+//                    int capacity = Integer.parseInt(response);
+//                    forklift.setCapacity(capacity);
+//                    usersCurrentActionMap.put(chatId, "set_year");
+//                    messageHelper.prepareAndSendMessage(chatId, "Please set the year:");
+//                    log.info("User response for chatId {}: set capacity to {}", chatId, response);
+//                } catch (NumberFormatException e) {
+//                    messageHelper.prepareAndSendMessage(chatId, "Invalid capacity. Please enter a valid number.");
+//                    log.error("NumberFormatException for chatId {}: {}", chatId, e.getMessage());
+//                }
+//                break;
+//            case "set_year":
+//                try {
+//                    int year = Integer.parseInt(response);
+//                    forklift.setYear(year);
+//                    usersCurrentActionMap.put(chatId, "set_hours");
+//                    messageHelper.prepareAndSendMessage(chatId, "Please set the hours:");
+//                    log.info("User response for chatId {}: set year to {}", chatId, response);
+//                } catch (NumberFormatException e) {
+//                    messageHelper.prepareAndSendMessage(chatId, "Invalid year. Please enter a valid number.");
+//                    log.error("NumberFormatException for chatId {}: {}", chatId, e.getMessage());
+//                }
+//                break;
+//            case "set_hours":
+//                try {
+//                    Long hours = Long.parseLong(response);
+//                    forklift.setHours(hours);
+//                    usersCurrentActionMap.put(chatId, "set_location");
+//                    String text = "Please set the location:";
+//                    messageHelper.sendMessageWithInlineKeyboard(locations, text, chatId);
+//                    log.info("User response for chatId {}: set hours to {}", chatId, response);
+//                } catch (NumberFormatException e) {
+//                    messageHelper.prepareAndSendMessage(chatId, "Invalid hours. Please enter a valid number.");
+//                    log.error("NumberFormatException for chatId {}: {}", chatId, e.getMessage());
+//                }
+//                break;
+//            default:
+//                messageHelper.prepareAndSendMessage(chatId, "Sorry, I didn't understand that. Please click on the button");
+//                log.warn("Unrecognized action for chatId: {}. User response: '{}'", chatId, response);
+//        }
     }
 
     public void handleUserResponseWithInlineKeyboard(long chatId, String callBackData, long messageId ) {
@@ -136,50 +136,50 @@ public class ForkliftManagementHelper {
             return;
         }
 
-        switch (usersCurrentActionMap.get(chatId)) {
-            case "set_manufacturer":
-                String manufacturer = buttonToManufacturerMap.get(callBackData);
-                if (manufacturer != null) {
-                    forklift.setManufacturer(manufacturer);
-                    usersCurrentActionMap.put(chatId, "set_model");
-                    messageHelper.editAndSendMessage(chatId, "Please set the model:", messageId);
-                    log.info("Manufacturer set to '{}' for chatId: {}", manufacturer, chatId);
-                } else {
-                    messageHelper.prepareAndSendMessage(chatId, "Sorry, the manufacturer was not recognized");
-                    log.warn("Unrecognized manufacturer from callback data '{}' for chatId: {}", callBackData, chatId);
-                }
-                break;
-            case "set_location":
-                String location = buttonToLocationMap.get(callBackData);
-                if (location != null) {
-                    forklift.setLocation(location);
-                    usersCurrentActionMap.put(chatId, "set_status");
-                    messageHelper.sendMessageWithInlineKeyboard(statuses, "Please set the status:", chatId, messageId);
-                    log.info("Location set to '{}' for chatId: {}", location, chatId);
-                } else {
-                    messageHelper.prepareAndSendMessage(chatId, "Sorry, the location was not recognized");
-                    log.warn("Unrecognized manufacturer from callback data '{}' for chatId: {}", callBackData, chatId);
-                }
-                break;
-            case "set_status":
-                String status = buttonToStatusMap.get(callBackData);
-                if (status != null) {
-                    forklift.setStatus(status);
-                    forkliftService.saveForklift(forklift);
-                    usersForkliftMap.remove(chatId);
-                    usersCurrentActionMap.put(chatId, "completed");
-                    messageHelper.editAndSendMessage(chatId, "The details about the new forklift must be here.", messageId);
-                    messageHelper.sendMessageWithKeyboard(chatId, "Forklift has been added successfully!", keyboardHelper.createStartKeyboard());
-                    log.info("Forklift successfully saved for chatId: {}, forklift: {}", chatId, forklift);
-                } else {
-                    messageHelper.prepareAndSendMessage(chatId, "Sorry, the status was not recognized");
-                    log.warn("Unrecognized manufacturer from callback data '{}' for chatId: {}", callBackData, chatId);
-                }
-                break;
-            default:
-                messageHelper.prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
-                log.warn("Unrecognized action for chatId: {}.", chatId);
-                break;
-        }
+//        switch (usersCurrentActionMap.get(chatId)) {
+//            case "set_manufacturer":
+//                String manufacturer = buttonToManufacturerMap.get(callBackData);
+//                if (manufacturer != null) {
+//                    forklift.setManufacturer(manufacturer);
+//                    usersCurrentActionMap.put(chatId, "set_model");
+//                    messageHelper.editAndSendMessage(chatId, "Please set the model:", messageId);
+//                    log.info("Manufacturer set to '{}' for chatId: {}", manufacturer, chatId);
+//                } else {
+//                    messageHelper.prepareAndSendMessage(chatId, "Sorry, the manufacturer was not recognized");
+//                    log.warn("Unrecognized manufacturer from callback data '{}' for chatId: {}", callBackData, chatId);
+//                }
+//                break;
+//            case "set_location":
+//                String location = buttonToLocationMap.get(callBackData);
+//                if (location != null) {
+//                    forklift.setLocation(location);
+//                    usersCurrentActionMap.put(chatId, "set_status");
+//                    messageHelper.sendMessageWithInlineKeyboard(statuses, "Please set the status:", chatId, messageId);
+//                    log.info("Location set to '{}' for chatId: {}", location, chatId);
+//                } else {
+//                    messageHelper.prepareAndSendMessage(chatId, "Sorry, the location was not recognized");
+//                    log.warn("Unrecognized manufacturer from callback data '{}' for chatId: {}", callBackData, chatId);
+//                }
+//                break;
+//            case "set_status":
+//                String status = buttonToStatusMap.get(callBackData);
+//                if (status != null) {
+//                    forklift.setStatus(status);
+//                    forkliftService.saveForklift(forklift);
+//                    usersForkliftMap.remove(chatId);
+//                    usersCurrentActionMap.put(chatId, "completed");
+//                    messageHelper.editAndSendMessage(chatId, "The details about the new forklift must be here.", messageId);
+//                    messageHelper.sendMessageWithKeyboard(chatId, "Forklift has been added successfully!", keyboardHelper.createStartKeyboard());
+//                    log.info("Forklift successfully saved for chatId: {}, forklift: {}", chatId, forklift);
+//                } else {
+//                    messageHelper.prepareAndSendMessage(chatId, "Sorry, the status was not recognized");
+//                    log.warn("Unrecognized manufacturer from callback data '{}' for chatId: {}", callBackData, chatId);
+//                }
+//                break;
+//            default:
+//                messageHelper.prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
+//                log.warn("Unrecognized action for chatId: {}.", chatId);
+//                break;
+//        }
     }
 }
