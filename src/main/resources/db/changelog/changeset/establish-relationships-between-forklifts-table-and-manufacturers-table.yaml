@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: establish-relationships-between-forklifts-table-and-manufacturers-table #  Textual identifier (Required)
+      author: Aleksanra Anisimova #  Author (Required)
+      changes:
+        # add new columns with relationship
+        - addColumn:
+            tableName: forklifts
+            columns:
+              - column:
+                  name: manufacturer_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_forklifts_manufacturer
+                    referencedTableName: manufacturers
+                    referencedColumnNames: id
