@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: change-column-type-in-forklifts-table #  Textual identifier (Required)
+      author: Aleksanra Anisimova #  Author (Required)
+      changes:
+        # delete old column
+        - dropColumn:
+            tableName: forklifts
+            columnName: inventory_number
+
+        # add new column
+        - addColumn:
+            tableName: forklifts
+            columns:
+              - column:
+                  name: inventory_number
+                  type: varchar(100)

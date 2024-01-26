@@ -29,4 +29,6 @@ databaseChangeLog:
       file: db/changelog/changeset/establish-relationships-between-forklifts-table-and-technical_details-table.yaml
   - include: #  an active migration
       file: db/changelog/changeset/establish-relationships-between-forklifts-table-and-physical_details-table.yaml
+  - include: #  an active migration
+      file: db/changelog/changeset/change-column-type-in-forklifts-table.yaml
 

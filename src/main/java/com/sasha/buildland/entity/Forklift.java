@@ -33,7 +33,7 @@ public class Forklift {
     private Long id;
 
     @Column(name = "inventory_number")
-    private int number;
+    private String number;
 
     @ManyToOne
     @JoinColumn(name = "manufacturer_id")
