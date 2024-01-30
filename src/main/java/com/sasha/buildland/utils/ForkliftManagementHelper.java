@@ -1,13 +1,18 @@
 package com.sasha.buildland.utils;
 
 import com.sasha.buildland.entity.Forklift;
+import com.sasha.buildland.entity.InlineKeyboardObject;
+import com.sasha.buildland.entity.Location;
+import com.sasha.buildland.entity.Manufacturer;
+import com.sasha.buildland.enums.Status;
 import com.sasha.buildland.service.ForkliftService;
+import com.sasha.buildland.service.LocationService;
+import com.sasha.buildland.service.ManufacturerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,43 +22,27 @@ import java.util.Map;
 public class ForkliftManagementHelper {
 
     private final ForkliftService forkliftService;
+    private final ManufacturerService manufacturerService;
+    private final LocationService locationService;
     private final KeyboardHelper keyboardHelper;
     private final MessageHelper messageHelper;
 
     private Map<Long, Forklift> usersForkliftMap = new HashMap<>();
     private Map<Long, String> usersCurrentActionMap = new HashMap<>();
 
-    private Map<String, String> buttonToLocationMap = new HashMap<>();
-    private Map<String, String> buttonToManufacturerMap = new HashMap<>();
-    private Map<String, String> buttonToStatusMap = new HashMap<>();
-
-    private List<String> manufacturers = Arrays.asList("Toyota", "Nissan", "Caterpillar");
-    private List<String> locations = Arrays.asList("El Monte", "Commerce");
-    private List<String> statuses = Arrays.asList("ready for sale", "repairs needed", "sent for repair", "rented", "sold");
-
     private static final String COMMAND_NOT_RECOGNIZED_MESSAGE = "Sorry, the command was not recognized";
 
     @Autowired
     public ForkliftManagementHelper(ForkliftService forkliftService,
+                                    ManufacturerService manufacturerService,
+                                    LocationService locationService,
                                     @Lazy KeyboardHelper keyboardHelper,
                                     @Lazy MessageHelper messageHelper) {
         this.forkliftService = forkliftService;
+        this.manufacturerService = manufacturerService;
+        this.locationService = locationService;
         this.keyboardHelper = keyboardHelper;
         this.messageHelper = messageHelper;
-    }
-
-    {   buttonToManufacturerMap.put("TOYOTA_BUTTON", "Toyota");
-        buttonToManufacturerMap.put("NISSAN_BUTTON", "Nissan");
-        buttonToManufacturerMap.put("CATERPILLAR_BUTTON", "Caterpillar");
-
-        buttonToLocationMap.put("EL MONTE_BUTTON","El Monte");
-        buttonToLocationMap.put("COMMERCE_BUTTON","Commerce");
-
-        buttonToStatusMap.put("READY FOR SALE_BUTTON", "Ready for sale");
-        buttonToStatusMap.put("REPAIRS NEEDED_BUTTON", "repairs needed");
-        buttonToStatusMap.put("SEND FOR REPAIR_BUTTON", "sent for repair");
-        buttonToStatusMap.put("RENTED_BUTTON", "rented");
-        buttonToStatusMap.put("SOLD_BUTTON", "sold");
     }
 
     public Map<Long, String> getUsersCurrentActionMap() {
@@ -63,10 +52,10 @@ public class ForkliftManagementHelper {
     public void addForkliftCommandReceived(long chatId) {
 
         usersForkliftMap.put(chatId, new Forklift());
-        usersCurrentActionMap.put(chatId, "set_manufacturer");
-        String text = "Please set the manufacturer:";
+        usersCurrentActionMap.put(chatId, "set_inventory_number");
         messageHelper.sendMessageWithKeyboard(chatId, "New forklift", keyboardHelper.createReturnKeyboard());
-        messageHelper.sendMessageWithInlineKeyboard(manufacturers, text, chatId);
+        //TODO show previous inventory number if exists
+        messageHelper.prepareAndSendMessage(chatId, "Please set inventory number:");
         log.info("Initiated forklift addition process for chatId: {}", chatId);
     }
 
@@ -77,6 +66,54 @@ public class ForkliftManagementHelper {
             log.warn("Forklift not found for chatId: {}", chatId);
             return;
         }
+
+        String text;
+
+        switch (usersCurrentActionMap.get(chatId)) {
+            case "set_inventory_number":
+                forklift.setNumber(response);
+                usersCurrentActionMap.put(chatId, "set_manufacturer");
+                text = "Please set the manufacturer:";
+                List<Manufacturer> manufacturers = manufacturerService.getAllManufacturers();
+                messageHelper.sendMessageWithInlineKeyboard2(manufacturers, text, chatId);
+                log.info("User response for chatId {}: set inventory_number to {}", chatId, response);
+                break;
+            case "set_model":
+                forklift.setModel(response);
+                usersCurrentActionMap.put(chatId, "set_serial_number");
+                text = "Please set the serial number:";
+                messageHelper.prepareAndSendMessage(chatId, text);
+                log.info("User response for chatId {}: set model to {}", chatId, response);
+                break;
+            case "set_serial_number":
+                forklift.setSerial(response);
+                usersCurrentActionMap.put(chatId, "set_location");
+                text = "Please set the location:";
+                List<Location> locations = locationService.getAllLocations();
+                messageHelper.sendMessageWithInlineKeyboard2(locations, text, chatId);
+                log.info("User response for chatId {}: set serial_number to {}", chatId, response);
+                break;
+            case "set_sale_price":
+                try {
+                    int price = Integer.parseInt(response);
+                    forklift.setPrice(price);
+                forkliftService.saveForklift(forklift);
+                usersForkliftMap.remove(chatId);
+                usersCurrentActionMap.put(chatId, "completed");
+                messageHelper.sendMessageWithKeyboard(chatId, "Forklift has been added successfully!", keyboardHelper.createStartKeyboard());
+
+                    log.info("User response for chatId {}: set price to {}", chatId, response);
+                } catch (NumberFormatException e) {
+                    messageHelper.prepareAndSendMessage(chatId, "Invalid price. Please enter a valid number.");
+                    log.error("NumberFormatException for chatId {}: {}", chatId, e.getMessage());
+                }
+                break;
+
+            default:
+                messageHelper.prepareAndSendMessage(chatId, "Sorry, I didn't understand that.");
+                log.warn("Unrecognized action for chatId: {}. User response: '{}'", chatId, response);
+        }
+
 
 //        switch (usersCurrentActionMap.get(chatId)) {
 //            case "set_model":
@@ -128,13 +165,72 @@ public class ForkliftManagementHelper {
 //        }
     }
 
-    public void handleUserResponseWithInlineKeyboard(long chatId, String callBackData, long messageId ) {
+    public void handleUserResponseWithInlineKeyboard(long chatId, String callBackData, long messageId) {
         Forklift forklift = usersForkliftMap.get(chatId);
         if (forklift == null) {
             messageHelper.prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
             log.warn("Forklift not found for chatId: {}", chatId);
             return;
         }
+
+        switch (usersCurrentActionMap.get(chatId)) {
+            case "set_manufacturer":
+                InlineKeyboardObject manufacturer = keyboardHelper.getButtonMap().get(callBackData);
+                if (manufacturer != null) {
+                    forklift.setManufacturer((Manufacturer) manufacturer);
+                    usersCurrentActionMap.put(chatId, "set_model");
+                    messageHelper.editAndSendMessage(chatId, "Please set the model:", messageId);
+                    log.info("Manufacturer set to '{}' for chatId: {}", manufacturer, chatId);
+                } else {
+                    messageHelper.prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
+                    log.warn("Command not recognized for chatId: {}", chatId);
+                }
+                break;
+            case "set_location":
+                InlineKeyboardObject location = keyboardHelper.getButtonMap().get(callBackData);
+                if (location != null) {
+                    forklift.setLocation((Location) location);
+                    usersCurrentActionMap.put(chatId, "set_forklift_status");
+
+                    String text = "Please set the forklift status:";
+                    List<String> statusList = Status.getDisplayNames();
+                    messageHelper.sendMessageWithInlineKeyboard(statusList, text, chatId, messageId);
+
+                    log.info("Location set to '{}' for chatId: {}", location, chatId);
+                } else {
+                    messageHelper.prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
+                    log.warn("Command not recognized for chatId: {}", chatId);
+                }
+                break;
+            case "set_forklift_status":
+                String statusDisplayName = keyboardHelper.getEnumButtonMap().get(callBackData);
+                if (statusDisplayName != null) {
+                    Status status = Status.fromDisplayName(statusDisplayName);
+                    forklift.setStatus(status);
+
+//                    usersCurrentActionMap.put(chatId, "set_technical_details");
+//                    messageHelper.editAndSendMessage(chatId, "Please set the technical details:", messageId);
+                    usersCurrentActionMap.put(chatId, "set_sale_price");
+                    messageHelper.editAndSendMessage(chatId, "Please set the sale price:", messageId);
+                    log.info("Status set to '{}' for chatId: {}", status, chatId);
+                } else {
+                    messageHelper.prepareAndSendMessage(chatId, "Sorry, the status was not recognized");
+                    log.warn("Unrecognized status from callback data '{}' for chatId: {}", callBackData, chatId);
+                }
+
+//                 FINISH
+//                forkliftService.saveForklift(forklift);
+//                usersForkliftMap.remove(chatId);
+//                usersCurrentActionMap.put(chatId, "completed");
+//                messageHelper.sendMessageWithKeyboard(chatId, "Forklift has been added successfully!", keyboardHelper.createStartKeyboard());
+
+                break;
+            default:
+                messageHelper.prepareAndSendMessage(chatId, COMMAND_NOT_RECOGNIZED_MESSAGE);
+                log.warn("Unrecognized action for chatId: {}.", chatId);
+                break;
+        }
+
 
 //        switch (usersCurrentActionMap.get(chatId)) {
 //            case "set_manufacturer":

@@ -19,6 +19,7 @@ public class KeyboardHelper {
     private static final String BUTTON_SUFFIX = "_BUTTON";
     private Map<String, InlineKeyboardObject> buttonMap = new HashMap<>();
     private Map<String, String> confirmationButtonMap = new HashMap<>();
+    private Map<String, String> enumButtonMap = new HashMap<>();
 
     public Map<String, InlineKeyboardObject> getButtonMap() {
         return buttonMap;
@@ -27,6 +28,11 @@ public class KeyboardHelper {
     public Map<String, String> getConfirmationButtonMap() {
         return confirmationButtonMap;
     }
+
+    public Map<String, String> getEnumButtonMap() {
+        return enumButtonMap;
+    }
+
 
     public ReplyKeyboardMarkup createStartKeyboard() {
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
@@ -104,14 +110,18 @@ public class KeyboardHelper {
 
             var firstButton = new InlineKeyboardButton();  // create first button
             firstButton.setText(list.get(i));
-            firstButton.setCallbackData(list.get(i).toUpperCase() + BUTTON_SUFFIX); // indicator (id), that allow bot to understand which button is pressed
+            String button1 = list.get(i).toUpperCase() + BUTTON_SUFFIX;
+            firstButton.setCallbackData(button1);
+            enumButtonMap.put(button1, list.get(i));
             rowInline.add(firstButton);
 
             // Check if there is the next element to add into the same row
             if (i + 1 < list.size()) {
                 var secondButton = new InlineKeyboardButton();
                 secondButton.setText(list.get(i + 1));
-                secondButton.setCallbackData(list.get(i + 1).toUpperCase() + BUTTON_SUFFIX);
+                String button2 = list.get(i + 1).toUpperCase() + BUTTON_SUFFIX;
+                secondButton.setCallbackData(button2);
+                enumButtonMap.put(button2, list.get(i + 1));
                 rowInline.add(secondButton);
             }
 
