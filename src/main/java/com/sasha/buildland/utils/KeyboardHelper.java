@@ -82,6 +82,30 @@ public class KeyboardHelper {
         return keyboardMarkup;
     }
 
+    public ReplyKeyboardMarkup createGetKeyboard() {
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+
+        //create a list of rows
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        // first row of buttons
+        KeyboardRow row = new KeyboardRow();
+        row.add("get all forklifts");
+        row.add("find by capacity");
+        keyboardRows.add(row); // add the row to the list
+
+        // second row of buttons
+        row = new KeyboardRow();
+        row.add("find by price");
+        row.add("main menu");
+        keyboardRows.add(row); // add the row to the list
+
+        // add to the keyboard
+        keyboardMarkup.setKeyboard(keyboardRows);
+
+        return keyboardMarkup;
+    }
+
     public ReplyKeyboardMarkup createReturnKeyboard() {
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
 

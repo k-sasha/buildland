@@ -59,6 +59,23 @@ public class ForkliftManagementHelper {
         log.info("Initiated forklift addition process for chatId: {}", chatId);
     }
 
+    public void getAllForkliftsCommandReceived(long chatId) {
+        usersCurrentActionMap.put(chatId, "get_forklift");
+        messageHelper.sendMessageWithKeyboard(chatId, "Get all forklifts", keyboardHelper.createReturnKeyboard());
+
+        List<Forklift> forklifts = forkliftService.getAllForklifts();
+
+        // Generate display text for each forklift
+        StringBuilder allForkliftsText = new StringBuilder("Available Forklifts:\n");
+        for (Forklift forklift : forklifts) {
+            allForkliftsText.append(forklift.formatForkliftInfo()).append("\n\n");
+        }
+
+        usersCurrentActionMap.put(chatId, "completed");
+        messageHelper.sendMessageWithKeyboard(chatId, allForkliftsText.toString(), keyboardHelper.createStartKeyboard());
+        log.info("Initiated forklift selection process for chatId: {}", chatId);
+    }
+
     public void handleUserResponse(long chatId, String response) {
         Forklift forklift = usersForkliftMap.get(chatId);
         if (forklift == null) {
