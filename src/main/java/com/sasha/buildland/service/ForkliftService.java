@@ -7,4 +7,5 @@ import java.util.List;
 public interface ForkliftService {
     Forklift saveForklift(Forklift forklift);
     List<Forklift> getAllForklifts();
+    List<Forklift> findForkliftsByCapacity(int capacity);
 }

@@ -50,6 +50,7 @@ public class BotController extends TelegramLongPollingBot {
     private static final String COMMAND_NOT_RECOGNIZED_MESSAGE = "Sorry, the command was not recognized";
     private static final String ADD_FORKLIFT = "add_forklift";
     private static final String GET_FORKLIFT = "get_forklift";
+    private static final String FIND_ALL_FORKLIFTS_BY_CAPACITY = "find_forklift_by_capacity";
     private static final String ADD_LOCATION = "add_location";
     private static final String DELETE_LOCATION = "delete_location";
     private static final String ADD_MANUFACTURER = "add_manufacturer";
@@ -108,7 +109,7 @@ public class BotController extends TelegramLongPollingBot {
                 manufacturerManagementHelper.deleteManufacturerCommandReceived(chatId);
                 userStates.put(chatId, DELETE_MANUFACTURER);
             } else if (messageText.equals("get forklift")) { // if button pushed with start keyboard
-                messageHelper.sendMessageWithKeyboard(chatId, "what do you want to get?", keyboardHelper.createGetKeyboard());
+                messageHelper.sendMessageWithKeyboard(chatId, "By what parameters do you want to get a forklift?", keyboardHelper.createGetKeyboard());
             } else if (messageText.equals("get all forklifts")) {
                 userStates.put(chatId, GET_FORKLIFT);
                 forkliftManagementHelper.getAllForkliftsCommandReceived(chatId);
@@ -116,9 +117,19 @@ public class BotController extends TelegramLongPollingBot {
                     userStates.remove(chatId); // Remove the user's state
                     forkliftManagementHelper.getUsersCurrentActionMap().remove(chatId); // Also remove the state from the helper
                 }
+            } else if (messageText.equals("find by capacity")) {
+                userStates.put(chatId, FIND_ALL_FORKLIFTS_BY_CAPACITY);
+                forkliftManagementHelper.findAllForkliftsByCapacityCommandReceived(chatId);
+
             } else {
                 if (ADD_FORKLIFT.equals(userStates.get(chatId))) {
-                    forkliftManagementHelper.handleUserResponse(chatId, messageText);
+                    forkliftManagementHelper.handleAddForkliftResponse(chatId, messageText);
+                    if (COMPLETED.equals(forkliftManagementHelper.getUsersCurrentActionMap().get(chatId))) {
+                        userStates.remove(chatId); // Remove the user's state
+                        forkliftManagementHelper.getUsersCurrentActionMap().remove(chatId); // Also remove the state from the helper
+                    }
+                } else if (FIND_ALL_FORKLIFTS_BY_CAPACITY.equals(userStates.get(chatId))) {
+                    forkliftManagementHelper.handleSearchForkliftByCapacityResponse(chatId, messageText);
                     if (COMPLETED.equals(forkliftManagementHelper.getUsersCurrentActionMap().get(chatId))) {
                         userStates.remove(chatId); // Remove the user's state
                         forkliftManagementHelper.getUsersCurrentActionMap().remove(chatId); // Also remove the state from the helper
@@ -146,7 +157,7 @@ public class BotController extends TelegramLongPollingBot {
             log.info("Callback query received from chatId: {}. Data: {}", chatId, callBackData);
 
             if (ADD_FORKLIFT.equals(userStates.get(chatId))) {
-                forkliftManagementHelper.handleUserResponseWithInlineKeyboard(chatId, callBackData, messageId);
+                forkliftManagementHelper.handleAddForkliftResponseWithInlineKeyboard(chatId, callBackData, messageId);
             } else if (DELETE_LOCATION.equals(userStates.get(chatId))) {
                 locationManagementHelper.handleUserResponseWithInlineKeyboard(chatId, callBackData, messageId);
                 if (COMPLETED.equals(locationManagementHelper.getUsersCurrentActionMap().get(chatId))) {

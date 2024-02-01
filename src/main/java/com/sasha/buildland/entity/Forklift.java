@@ -18,7 +18,6 @@ import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.SequenceGenerator;
-import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "forklifts")
@@ -72,10 +71,12 @@ public class Forklift {
             sb.append("Manufacturer: ").append(this.getManufacturer().getName()).append("\n");
         if (this.getModel() != null) sb.append("Model: ").append(this.getModel()).append("\n");
         if (this.getSerial() != null) sb.append("Serial: ").append(this.getSerial()).append("\n");
+        if (this.getTechnicalDetails() != null && this.getTechnicalDetails().getLoadCapacity() > 0)
+            sb.append("Capacity: ").append(this.getTechnicalDetails().getLoadCapacity()).append(" lb").append("\n");
         if (this.getLocation() != null && this.getLocation().getName() != null)
             sb.append("Location: ").append(this.getLocation().getName()).append("\n");
-        if (this.getStatus() != null) sb.append("Status: ").append(this.getStatus()).append("\n");
-        if (this.getPrice() > 0) sb.append("Price: ").append(this.getPrice());
+        if (this.getStatus() != null) sb.append("Status: ").append(this.getStatus().getDisplayName()).append("\n");
+        if (this.getPrice() > 0) sb.append("Price: $").append(this.getPrice());
 
         return sb.toString();
     }
