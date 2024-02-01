@@ -1,11 +1,9 @@
 package com.sasha.buildland.utils;
 
-import com.sasha.buildland.entity.Forklift;
-import com.sasha.buildland.entity.InlineKeyboardObject;
-import com.sasha.buildland.entity.Location;
-import com.sasha.buildland.entity.Manufacturer;
+import com.sasha.buildland.entity.*;
 import com.sasha.buildland.enums.Status;
 import com.sasha.buildland.service.ForkliftService;
+import com.sasha.buildland.service.ForkliftTechnicalDetailsService;
 import com.sasha.buildland.service.LocationService;
 import com.sasha.buildland.service.ManufacturerService;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +20,7 @@ import java.util.Map;
 public class ForkliftManagementHelper {
 
     private final ForkliftService forkliftService;
+    private final ForkliftTechnicalDetailsService technicalDetailsService;
     private final ManufacturerService manufacturerService;
     private final LocationService locationService;
     private final KeyboardHelper keyboardHelper;
@@ -34,11 +33,13 @@ public class ForkliftManagementHelper {
 
     @Autowired
     public ForkliftManagementHelper(ForkliftService forkliftService,
+                                    ForkliftTechnicalDetailsService technicalDetailsService,
                                     ManufacturerService manufacturerService,
                                     LocationService locationService,
                                     @Lazy KeyboardHelper keyboardHelper,
                                     @Lazy MessageHelper messageHelper) {
         this.forkliftService = forkliftService;
+        this.technicalDetailsService = technicalDetailsService;
         this.manufacturerService = manufacturerService;
         this.locationService = locationService;
         this.keyboardHelper = keyboardHelper;
@@ -104,20 +105,37 @@ public class ForkliftManagementHelper {
                 break;
             case "set_serial_number":
                 forklift.setSerial(response);
-                usersCurrentActionMap.put(chatId, "set_location");
-                text = "Please set the location:";
-                List<Location> locations = locationService.getAllLocations();
-                messageHelper.sendMessageWithInlineKeyboard2(locations, text, chatId);
+                usersCurrentActionMap.put(chatId, "set_load_capacity");
+                text = "Please set the load capacity:";
+                messageHelper.prepareAndSendMessage(chatId, text);
                 log.info("User response for chatId {}: set serial_number to {}", chatId, response);
+                break;
+            case "set_load_capacity":
+                try {
+                    int capacity = Integer.parseInt(response);
+                    ForkliftTechnicalDetails forkliftTechnicalDetails = new ForkliftTechnicalDetails();
+                    forkliftTechnicalDetails.setLoadCapacity(capacity);
+                    technicalDetailsService.saveForkliftTechnicalDetails(forkliftTechnicalDetails);
+
+                    forklift.setTechnicalDetails(forkliftTechnicalDetails);
+                    usersCurrentActionMap.put(chatId, "set_location");
+                    text = "Please set the location:";
+                    List<Location> locations = locationService.getAllLocations();
+                    messageHelper.sendMessageWithInlineKeyboard2(locations, text, chatId);
+                    log.info("User response for chatId {}: set load_capacity to {}", chatId, response);
+                } catch (NumberFormatException e) {
+                    messageHelper.prepareAndSendMessage(chatId, "Invalid load capacity. Please enter a valid number.");
+                    log.error("NumberFormatException for chatId {}: {}", chatId, e.getMessage());
+                }
                 break;
             case "set_sale_price":
                 try {
                     int price = Integer.parseInt(response);
                     forklift.setPrice(price);
-                forkliftService.saveForklift(forklift);
-                usersForkliftMap.remove(chatId);
-                usersCurrentActionMap.put(chatId, "completed");
-                messageHelper.sendMessageWithKeyboard(chatId, "Forklift has been added successfully!", keyboardHelper.createStartKeyboard());
+                    forkliftService.saveForklift(forklift);
+                    usersForkliftMap.remove(chatId);
+                    usersCurrentActionMap.put(chatId, "completed");
+                    messageHelper.sendMessageWithKeyboard(chatId, "Forklift has been added successfully!", keyboardHelper.createStartKeyboard());
 
                     log.info("User response for chatId {}: set price to {}", chatId, response);
                 } catch (NumberFormatException e) {
