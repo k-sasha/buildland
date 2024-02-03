@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: establish-relationships-between-forklifts-table-and-locations-table #  Textual identifier (Required)
+      author: Aleksanra Anisimova #  Author (Required)
+      changes:
+        # add new columns with relationship
+        - addColumn:
+            tableName: forklifts
+            columns:
+              - column:
+                  name: location_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_forklifts_location
+                    referencedTableName: locations
+                    referencedColumnNames: id

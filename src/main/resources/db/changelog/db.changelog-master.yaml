@@ -19,4 +19,16 @@ databaseChangeLog:
       file: db/changelog/changeset/create-forklift_physical_details.yaml
   - include:
       file: db/changelog/changeset/create-sequence-forklift_phys_detail_seq.yaml
+  - include: #  an active migration
+      file: db/changelog/changeset/update-forklifts-table-structure.yaml
+  - include: #  an active migration
+      file: db/changelog/changeset/establish-relationships-between-forklifts-table-and-locations-table.yaml
+  - include: #  an active migration
+      file: db/changelog/changeset/establish-relationships-between-forklifts-table-and-manufacturers-table.yaml
+  - include: #  an active migration
+      file: db/changelog/changeset/establish-relationships-between-forklifts-table-and-technical_details-table.yaml
+  - include: #  an active migration
+      file: db/changelog/changeset/establish-relationships-between-forklifts-table-and-physical_details-table.yaml
+  - include: #  an active migration
+      file: db/changelog/changeset/change-column-type-in-forklifts-table.yaml
 

@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: establish-relationships-between-forklifts-table-and-physical_details-table #  Textual identifier (Required)
+      author: Aleksanra Anisimova #  Author (Required)
+      changes:
+        # add new columns with relationship
+        - addColumn:
+            tableName: forklifts
+            columns:
+              - column:
+                  name: physical_details_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_forklifts_physical_details
+                    referencedTableName: forklift_physical_details
+                    referencedColumnNames: id
