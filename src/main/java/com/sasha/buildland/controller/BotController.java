@@ -51,6 +51,7 @@ public class BotController extends TelegramLongPollingBot {
     private static final String ADD_FORKLIFT = "add_forklift";
     private static final String GET_FORKLIFT = "get_forklift";
     private static final String FIND_ALL_FORKLIFTS_BY_CAPACITY = "find_forklift_by_capacity";
+    private static final String FIND_ALL_FORKLIFTS_BY_PRICE = "find_forklift_by_price";
     private static final String ADD_LOCATION = "add_location";
     private static final String DELETE_LOCATION = "delete_location";
     private static final String ADD_MANUFACTURER = "add_manufacturer";
@@ -121,6 +122,10 @@ public class BotController extends TelegramLongPollingBot {
                 userStates.put(chatId, FIND_ALL_FORKLIFTS_BY_CAPACITY);
                 forkliftManagementHelper.findAllForkliftsByCapacityCommandReceived(chatId);
 
+            } else if (messageText.equals("find by price")) {
+                userStates.put(chatId, FIND_ALL_FORKLIFTS_BY_PRICE);
+                forkliftManagementHelper.findAllForkliftsByPriceCommandReceived(chatId);
+
             } else {
                 if (ADD_FORKLIFT.equals(userStates.get(chatId))) {
                     forkliftManagementHelper.handleAddForkliftResponse(chatId, messageText);
@@ -134,7 +139,13 @@ public class BotController extends TelegramLongPollingBot {
                         userStates.remove(chatId); // Remove the user's state
                         forkliftManagementHelper.getUsersCurrentActionMap().remove(chatId); // Also remove the state from the helper
                     }
-                } else if (ADD_LOCATION.equals(userStates.get(chatId))) {
+                }  else if (FIND_ALL_FORKLIFTS_BY_PRICE.equals(userStates.get(chatId))) {
+                    forkliftManagementHelper.handleSearchForkliftByPriceResponse(chatId, messageText);
+                    if (COMPLETED.equals(forkliftManagementHelper.getUsersCurrentActionMap().get(chatId))) {
+                        userStates.remove(chatId); // Remove the user's state
+                        forkliftManagementHelper.getUsersCurrentActionMap().remove(chatId); // Also remove the state from the helper
+                    }
+                }else if (ADD_LOCATION.equals(userStates.get(chatId))) {
                     locationManagementHelper.handleUserResponse(chatId, messageText);
                     if (COMPLETED.equals(locationManagementHelper.getUsersCurrentActionMap().get(chatId))) {
                         userStates.remove(chatId); // Remove the user's state

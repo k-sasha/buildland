@@ -8,4 +8,5 @@ public interface ForkliftService {
     Forklift saveForklift(Forklift forklift);
     List<Forklift> getAllForklifts();
     List<Forklift> findForkliftsByCapacity(int capacity);
+    List<Forklift> findForkliftsByPrice(int price);
 }

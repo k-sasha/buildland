@@ -27,4 +27,9 @@ public class ForkliftServiceImpl implements ForkliftService{
     public List<Forklift> findForkliftsByCapacity(int capacity) {
         return forkliftRepository.findForkliftsByLoadCapacity(capacity);
     }
+
+    @Override
+    public List<Forklift> findForkliftsByPrice(int price) {
+        return forkliftRepository.findForkliftsByPrice(price);
+    }
 }

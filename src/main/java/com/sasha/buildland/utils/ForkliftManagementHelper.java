@@ -86,6 +86,13 @@ public class ForkliftManagementHelper {
         log.info("Initiated search for forklifts by capacity for chatId: {}", chatId);
     }
 
+    public void findAllForkliftsByPriceCommandReceived(long chatId) {
+        usersCurrentActionMap.put(chatId, "find_all_forklifts_by_price");
+        messageHelper.sendMessageWithKeyboard(chatId, "Find all forklifts by price", keyboardHelper.createReturnKeyboard());
+        messageHelper.prepareAndSendMessage(chatId, "Enter the price of the forklifts you are looking for:");
+        log.info("Initiated search for forklifts by price for chatId: {}", chatId);
+    }
+
     public void handleAddForkliftResponse(long chatId, String response) {
         Forklift forklift = usersForkliftMap.get(chatId);
         if (forklift == null) {
@@ -229,7 +236,7 @@ public class ForkliftManagementHelper {
         List<Forklift> matchingForklifts = forkliftService.findForkliftsByCapacity(capacity);
 
         if (matchingForklifts.isEmpty()) {
-            messageHelper.prepareAndSendMessage(chatId, "No forklifts found matching the capacity: " + capacity + "kg.");
+            messageHelper.prepareAndSendMessage(chatId, "No forklifts found matching the capacity: " + capacity + "lb.");
             log.info("No forklifts found with capacity {} for chatId {}", capacity, chatId);
         } else {
             StringBuilder responseText = new StringBuilder("Forklifts found with capacity " + capacity + "lb:\n\n");
@@ -238,6 +245,34 @@ public class ForkliftManagementHelper {
             }
             messageHelper.sendMessageWithKeyboard(chatId, responseText.toString(), keyboardHelper.createStartKeyboard());
             log.info("{} forklifts found with capacity {} for chatId {}", matchingForklifts.size(), capacity, chatId);
+        }
+
+        usersCurrentActionMap.put(chatId, "completed");
+
+    }
+
+    public void handleSearchForkliftByPriceResponse(long chatId, String response) {
+        int price;
+        try {
+            price = Integer.parseInt(response);
+        } catch (NumberFormatException e) {
+            messageHelper.prepareAndSendMessage(chatId, "Invalid price entered. Please enter a numeric value.");
+            log.error("Invalid price format received from chatId {}: {}", chatId, response);
+            return;
+        }
+
+        List<Forklift> matchingForklifts = forkliftService.findForkliftsByPrice(price);
+
+        if (matchingForklifts.isEmpty()) {
+            messageHelper.prepareAndSendMessage(chatId, "No forklifts found matching the price: $" + price + ".");
+            log.info("No forklifts found with price {} for chatId {}", price, chatId);
+        } else {
+            StringBuilder responseText = new StringBuilder("Forklifts found with price $" + price + ":\n\n");
+            for (Forklift forklift : matchingForklifts) {
+                responseText.append(forklift.formatForkliftInfo()).append("\n\n");
+            }
+            messageHelper.sendMessageWithKeyboard(chatId, responseText.toString(), keyboardHelper.createStartKeyboard());
+            log.info("{} forklifts found with price {} for chatId {}", matchingForklifts.size(), price, chatId);
         }
 
         usersCurrentActionMap.put(chatId, "completed");

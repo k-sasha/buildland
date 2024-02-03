@@ -10,4 +10,6 @@ import java.util.List;
 public interface ForkliftRepository extends CrudRepository<Forklift, Integer> {
     @Query("SELECT f FROM Forklift f JOIN f.technicalDetails td WHERE td.loadCapacity = :capacity")
     List<Forklift> findForkliftsByLoadCapacity(@Param("capacity") int capacity);
+
+    List<Forklift> findForkliftsByPrice(int price);
 }
